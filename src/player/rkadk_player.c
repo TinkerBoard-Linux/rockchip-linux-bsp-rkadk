@@ -29,7 +29,11 @@
 #include "rk_mpi_ao.h"
 #include "rk_mpi_mb.h"
 #include "rk_mpi_sys.h"
+#ifndef OS_RTT
 #include "rkdemuxer.h"
+#else
+#include "../../../common_algorithm/common_algorithm/misc/include/rkdemuxer.h"
+#endif
 #include <stdbool.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -1167,7 +1171,8 @@ static void SendVideoData(RKADK_VOID *ptr) {
 #ifndef OS_RTT
   struct timespec t_begin, t_end;
 #else
-  struct timeval t_begin, t_end;
+  struct timeval t_begin = {0};
+  struct timeval t_end = {0};
 #endif
 
   RKADK_S32 ret = 0;

@@ -22,8 +22,8 @@ extern "C" {
 #endif
 
 #ifdef OS_RTT
-#include "../../libc/posix/ipc/semaphore.h"
-#include "../../libc/posix/io/poll/poll.h"
+#include "../../../libc/posix/ipc/semaphore.h"
+#include "../../../libc/posix/io/poll/poll.h"
 /* define in  <unistd.h> for other gcc compiler*/
 /* Values for the second argument to access.
    These may be OR'd together.  */

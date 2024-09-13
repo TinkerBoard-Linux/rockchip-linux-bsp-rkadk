@@ -19,7 +19,11 @@
 #include "rkadk_log.h"
 #include "rkadk_player.h"
 #include "rkadk_demuxer.h"
+#ifndef OS_RTT
 #include "rkdemuxer.h"
+#else
+#include "../../../common_algorithm/common_algorithm/misc/include/rkdemuxer.h"
+#endif
 #include <math.h>
 
 #include <getopt.h>

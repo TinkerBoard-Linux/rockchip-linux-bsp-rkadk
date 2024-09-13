@@ -20,7 +20,11 @@
 #include "rkadk_param.h"
 #include "rkadk_player.h"
 #include "rkadk_demuxer.h"
+#ifndef OS_RTT
 #include "rkdemuxer.h"
+#else
+#include "../../../common_algorithm/common_algorithm/misc/include/rkdemuxer.h"
+#endif
 #include <math.h>
 
 #include <getopt.h>
@@ -178,7 +182,7 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
 #if defined(RV1106_1103) || defined(RV1103B)
   pstFrmInfo->u32EnIntfType = DISPLAY_TYPE_DEFAULT;
 #else
-  pstFrmInfo->u32EnIntfType = DISPLAY_TYPE_HDMI;
+  pstFrmInfo->u32EnIntfType = DISPLAY_TYPE_MIPI;
 #endif
   pstFrmInfo->enIntfSync = RKADK_VO_OUTPUT_480P60;
   pstFrmInfo->u32BorderColor = 0x0000FA;
@@ -849,7 +853,6 @@ static void playerMain(void *arg) {
   if (RKADK_PARAM_GetCommParam(RKADK_PARAM_TYPE_VOLUME, &stPlayCfg.stAudioCfg.u32SpeakerVolume))
     stPlayCfg.stAudioCfg.u32SpeakerVolume = 70;
 
-  stPlayCfg.stAudioCfg.u32SpeakerVolume = 10;
 #if defined(RK3506)
   stPlayCfg.stAudioCfg.pSoundCard = "es8388p";
 #else

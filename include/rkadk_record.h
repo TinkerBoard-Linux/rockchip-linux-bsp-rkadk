@@ -23,7 +23,13 @@ extern "C" {
 
 #include "rkadk_common.h"
 #include "rkadk_muxer.h"
+#ifndef OS_RTT
 #include "file_common.h"
+#else
+#include "../../../common_algorithm/common_algorithm/misc/include/file_common.h"
+#endif
+
+
 
 typedef RKADK_MUXER_FPS_ATTR_S RKADK_RECORD_FPS_ATTR_S;
 typedef RKADK_MUXER_MANUAL_SPLIT_ATTR_S RKADK_REC_MANUAL_SPLIT_ATTR_S;

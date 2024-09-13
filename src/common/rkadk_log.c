@@ -7,7 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifndef OS_RTT
 static int m_rkadk_log_level = RKADK_LOG_LEVEL_WARN;
+#else
+static int m_rkadk_log_level = RKADK_LOG_LEVEL_INFO;
+#endif
+
 static int m_rkadk_log_cnt = 0;
 
 int get_log_level() {
