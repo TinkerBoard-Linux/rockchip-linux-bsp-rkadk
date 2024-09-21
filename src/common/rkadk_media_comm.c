@@ -1352,7 +1352,7 @@ RKADK_S32 RKADK_MPI_VO_Init(RKADK_S32 s32VoLay, RKADK_S32 s32VoDev, RKADK_S32 s3
 
 exit:
   RKADK_MUTEX_UNLOCK(g_stMediaCtx.voMutex);
-  return 0;
+  return ret;
 }
 
 RKADK_S32 RKADK_MPI_VO_DeInit(RKADK_S32 s32VoLay, RKADK_S32 s32VoDev, RKADK_S32 s32VoChn) {

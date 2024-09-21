@@ -1009,7 +1009,7 @@ static void playerMain(void *arg) {
   while (loop_count) {
     if (RKADK_PLAYER_Create(&pPlayer, &stPlayCfg)) {
       RKADK_LOGE("RKADK_PLAYER_Create failed");
-      return -1;
+      goto __EXIT;
     }
 
     if (u32Waterline > 0)
