@@ -205,7 +205,7 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
   pstFrmInfo->stSyncInfo.u16Vbb = 200;
   pstFrmInfo->stSyncInfo.u16Vfb = 194;
   pstFrmInfo->stSyncInfo.u16Vpw = 6;
-  pstFrmInfo->enVoSpliceMode = SPLICE_MODE_BYPASS;
+  pstFrmInfo->enVoSpliceMode = SPLICE_MODE_RGA;
 #endif
 
   return;
