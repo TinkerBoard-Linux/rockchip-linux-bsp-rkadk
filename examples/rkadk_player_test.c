@@ -174,8 +174,8 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
   pstFrmInfo->u32VoLay = 5;
 #endif
 #else
-  pstFrmInfo->u32DispWidth = 320;
-  pstFrmInfo->u32DispHeight = 240;
+  pstFrmInfo->u32DispWidth = 720;
+  pstFrmInfo->u32DispHeight = 1280;
   pstFrmInfo->u32ImgWidth = pstFrmInfo->u32DispWidth;
   pstFrmInfo->u32ImgHeight = pstFrmInfo->u32DispHeight;
   pstFrmInfo->u32VoFormat = VO_FORMAT_RGB888;
@@ -188,7 +188,7 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
   pstFrmInfo->u32BorderColor = 0x0000FA;
   pstFrmInfo->bMirror = RKADK_FALSE;
   pstFrmInfo->bFlip = RKADK_FALSE;
-  pstFrmInfo->u32Rotation = 0;
+  pstFrmInfo->u32Rotation = 1;
   pstFrmInfo->stSyncInfo.bIdv = RKADK_TRUE;
   pstFrmInfo->stSyncInfo.bIhs = RKADK_TRUE;
   pstFrmInfo->stSyncInfo.bIvs = RKADK_TRUE;
