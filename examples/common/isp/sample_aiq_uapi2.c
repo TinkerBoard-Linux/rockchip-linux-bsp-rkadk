@@ -105,7 +105,6 @@ static int SAMPLE_ISP_Init(RKADK_U32 u32CamId, SAMPLE_ISP_PARAM stIspParam) {
   char hdrStr[16];
   rk_aiq_sys_ctx_t *pstAiqCtx;
   rk_aiq_static_info_t atAiqStaticInfo;
-  rk_aiq_tb_info_t tb_info;
 
   setlinebuf(stdout);
 
@@ -119,6 +118,8 @@ static int SAMPLE_ISP_Init(RKADK_U32 u32CamId, SAMPLE_ISP_PARAM stIspParam) {
     return ret;
   }
 
+#if defined(RV1106_1103)
+  rk_aiq_tb_info_t tb_info;
   memset(&tb_info, 0, sizeof(rk_aiq_tb_info_t));
   tb_info.magic = sizeof(rk_aiq_tb_info_t) - 2;
   tb_info.is_start_once = false;
@@ -132,6 +133,7 @@ static int SAMPLE_ISP_Init(RKADK_U32 u32CamId, SAMPLE_ISP_PARAM stIspParam) {
   ret = rk_aiq_uapi2_sysctl_preInit_tb_info(atAiqStaticInfo.sensor_info.sensor_name, &tb_info);
   if (ret != 0)
     RKADK_LOGE("rk_aiq_uapi2_sysctl_preInit_tb_info failed %#X!", ret);
+#endif
 
   RKADK_LOGP("CamId: %d, sensor_name is %s, iqfiles is %s", u32CamId,
              atAiqStaticInfo.sensor_info.sensor_name, stIspParam.iqFileDir);
@@ -183,6 +185,7 @@ static int SAMPLE_ISP_Run(RKADK_U32 u32CamId, rk_aiq_working_mode_t WDRMode) {
   return 0;
 }
 
+#if defined(RV1106_1103) || defined(RV1103B)
 int SAMPLE_ISP_SET_FrameRate(RKADK_U32 u32CamId, RKADK_U32 uFps) {
   int ret = 0;
   Uapi_ExpSwAttrV2_t expSwAttr;
@@ -201,6 +204,26 @@ int SAMPLE_ISP_SET_FrameRate(RKADK_U32 u32CamId, RKADK_U32 uFps) {
   pthread_mutex_unlock(&gstIspHandle[u32CamId].aiqCtxMutex);
   return ret;
 }
+#else
+int SAMPLE_ISP_SET_FrameRate(RKADK_U32 u32CamId, RKADK_U32 uFps) {
+  int ret = 0;
+  frameRateInfo_t info;
+
+  RKADK_CHECK_CAMERAID(u32CamId, RKADK_FAILURE);
+  RKADK_CHECK_INIT(gstIspHandle[u32CamId].pstAiqCtx, RKADK_FAILURE);
+
+  pthread_mutex_lock(&gstIspHandle[u32CamId].aiqCtxMutex);
+
+  RKADK_LOGP("u32CamId[%d] uFps %d", u32CamId, uFps);
+  memset(&info, 0, sizeof(frameRateInfo_t));
+  info.mode = OP_MANUAL;
+  info.fps = uFps;
+  ret = rk_aiq_uapi2_setFrameRate(gstIspHandle[u32CamId].pstAiqCtx, info);
+
+  pthread_mutex_unlock(&gstIspHandle[u32CamId].aiqCtxMutex);
+  return ret;
+}
+#endif
 
 int SAMPLE_ISP_Start(RKADK_U32 u32CamId, SAMPLE_ISP_PARAM stIspParam) {
   int index, ret;
@@ -280,6 +303,19 @@ int SAMPLE_ISP_Stop(RKADK_U32 u32CamId) {
   return 0;
 }
 
+int SAMPLE_ISP_GET_MirrorFlip(RKADK_U32 u32CamId, bool *mirror, bool *flip) {
+  int ret = 0;
+
+  RKADK_CHECK_CAMERAID(u32CamId, RKADK_FAILURE);
+  RKADK_CHECK_INIT(gstIspHandle[u32CamId].pstAiqCtx, RKADK_FAILURE);
+
+  pthread_mutex_lock(&gstIspHandle[u32CamId].aiqCtxMutex);
+  ret =
+      rk_aiq_uapi2_getMirrorFlip(gstIspHandle[u32CamId].pstAiqCtx, mirror, flip);
+  pthread_mutex_unlock(&gstIspHandle[u32CamId].aiqCtxMutex);
+  return ret;
+}
+
 int SAMPLE_ISP_SET_MirrorFlip(RKADK_U32 u32CamId, bool mirror, bool flip) {
   int ret = 0;
 
@@ -296,19 +332,22 @@ int SAMPLE_ISP_SET_MirrorFlip(RKADK_U32 u32CamId, bool mirror, bool flip) {
   return ret;
 }
 
-int SAMPLE_ISP_GET_MirrorFlip(RKADK_U32 u32CamId, bool *mirror, bool *flip) {
-  int ret = 0;
+int SAMPLE_ISP_GetAINrParams(RKADK_U32 u32CamId, rk_ainr_param *param) {
+  int ret;
 
+  RKADK_CHECK_POINTER(param, RKADK_FAILURE);
   RKADK_CHECK_CAMERAID(u32CamId, RKADK_FAILURE);
   RKADK_CHECK_INIT(gstIspHandle[u32CamId].pstAiqCtx, RKADK_FAILURE);
 
-  pthread_mutex_lock(&gstIspHandle[u32CamId].aiqCtxMutex);
-  ret =
-      rk_aiq_uapi2_getMirrorFlip(gstIspHandle[u32CamId].pstAiqCtx, mirror, flip);
-  pthread_mutex_unlock(&gstIspHandle[u32CamId].aiqCtxMutex);
-  return ret;
+  ret = rk_aiq_uapi2_sysctl_getAinrParams(gstIspHandle[u32CamId].pstAiqCtx, param);
+  if (ret) {
+    printf("rk_aiq_uapi2_sysctl_getAinrParams failed[%x]", ret);
+    return ret;
+  }
+  return 0;
 }
 
+#if defined(RV1106_1103) || defined(RV1103B) || defined(RV1126_1109)
 int SAMPLE_ISP_UpdateIq(RKADK_U32 u32CamId, char *iqfile) {
   int ret = 0;
 
@@ -1134,20 +1173,5 @@ int SAMPLE_ISP_MultiFrame(RKADK_U32 u32CamId) {
   rk_aiq_uapi2_sysctl_resume(gstIspHandle[u32CamId].pstAiqCtx);
   return 0;
 }
-
-int SAMPLE_ISP_GetAINrParams(RKADK_U32 u32CamId, rk_ainr_param *param) {
-  int ret;
-
-  RKADK_CHECK_POINTER(param, RKADK_FAILURE);
-  RKADK_CHECK_CAMERAID(u32CamId, RKADK_FAILURE);
-  RKADK_CHECK_INIT(gstIspHandle[u32CamId].pstAiqCtx, RKADK_FAILURE);
-
-  ret = rk_aiq_uapi2_sysctl_getAinrParams(gstIspHandle[u32CamId].pstAiqCtx, param);
-  if (ret) {
-    printf("rk_aiq_uapi2_sysctl_getAinrParams failed[%x]", ret);
-    return ret;
-  }
-  return 0;
-}
-
+#endif
 #endif

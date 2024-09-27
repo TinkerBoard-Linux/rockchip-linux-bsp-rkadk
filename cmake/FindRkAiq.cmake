@@ -23,6 +23,7 @@ mark_as_advanced(
 if(RKAIQ_FOUND)
     set(RKAIQ_LIBRARIES    ${RKAIQ_LIBRARY})
     set(RKAIQ_INCLUDE_DIRS
+        ${RKAIQ_INCLUDE_DIR}
         ${RKAIQ_INCLUDE_DIR}/algos
         ${RKAIQ_INCLUDE_DIR}/algos/a3dlut
         ${RKAIQ_INCLUDE_DIR}/algos/ablc
@@ -44,7 +45,9 @@ if(RKAIQ_FOUND)
         ${RKAIQ_INCLUDE_DIR}/algos/awb
         ${RKAIQ_INCLUDE_DIR}/common
         ${RKAIQ_INCLUDE_DIR}/iq_parser
+        ${RKAIQ_INCLUDE_DIR}/iq_parser_v2
         ${RKAIQ_INCLUDE_DIR}/uAPI
+        ${RKAIQ_INCLUDE_DIR}/uAPI2
         ${RKAIQ_INCLUDE_DIR}/xcore)
 
     if(RKAIQ_LIBRARY AND NOT TARGET RkAiq::RkAiq)

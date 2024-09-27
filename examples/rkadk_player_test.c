@@ -128,8 +128,13 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
 
   memset(pstFrmInfo, 0, sizeof(RKADK_PLAYER_FRAME_INFO_S));
 #ifndef OS_RTT
+#ifdef RK3576
+  pstFrmInfo->u32DispWidth = 1080;
+  pstFrmInfo->u32DispHeight = 1920;
+#else
   pstFrmInfo->u32DispWidth = 720;
   pstFrmInfo->u32DispHeight = 1280;
+#endif
   pstFrmInfo->u32ImgWidth = pstFrmInfo->u32DispWidth;
   pstFrmInfo->u32ImgHeight = pstFrmInfo->u32DispHeight;
   pstFrmInfo->u32VoFormat = VO_FORMAT_RGB888;
@@ -160,6 +165,10 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
   pstFrmInfo->stSyncInfo.u16Vfb = 194;
   pstFrmInfo->stSyncInfo.u16Vpw = 6;
   pstFrmInfo->enVoSpliceMode = SPLICE_MODE_RGA;
+#ifdef RK3576
+  pstFrmInfo->u32VoDev = 1;
+  pstFrmInfo->u32VoLay = 5;
+#endif
 #else
   pstFrmInfo->u32DispWidth = 320;
   pstFrmInfo->u32DispHeight = 240;

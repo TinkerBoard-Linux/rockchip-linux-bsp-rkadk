@@ -1836,7 +1836,7 @@ RKADK_S32 RKADK_PHOTO_Reset(RKADK_MW_PTR *pHandle) {
   RKADK_CHECK_CAMERAID(pstHandle->u32CamId, RKADK_FAILURE);
 
 #if !defined(RV1106_1103) && !defined(RV1103B)
-  RKADK_LOGE("rv1126/1109 nonsupport dynamic setting resolution, please recreate!");
+  RKADK_LOGE("nonsupport dynamic setting resolution, please recreate!");
   return -1;
 #endif
 

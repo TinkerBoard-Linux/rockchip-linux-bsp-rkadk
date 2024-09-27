@@ -1971,12 +1971,12 @@ static int RKADK_RECORD_ResetCheck(RKADK_U32 u32CamId,
     bReset = RKADK_MEDIA_CompareResolution(&stVencAttr, u32Width, u32Height);
     if (bReset) {
       if (pstRecorder->stPipAttr[index].bEnablePip) {
-        RKADK_LOGD("AVS nonsupport dynamic setting resolution");
+        RKADK_LOGE("AVS nonsupport dynamic setting resolution");
         return -1;
       }
 
 #if !defined(RV1106_1103) && !defined(RV1103B)
-      RKADK_LOGD("rv1126/1109 nonsupport dynamic setting resolution");
+      RKADK_LOGE("nonsupport dynamic setting resolution");
       return -1;
 #endif
     }

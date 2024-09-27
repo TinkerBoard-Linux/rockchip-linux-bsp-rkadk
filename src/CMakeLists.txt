@@ -90,7 +90,10 @@ if(ENABLE_JPEG_SLICE)
 endif()
 
 if(ENABLE_STORAGE)
-	target_link_libraries(rkadk iconv rkfsmk)
+	target_link_libraries(rkadk rkfsmk)
+	if(${RKADK_CHIP} STREQUAL "rv1106" OR ${RKADK_CHIP} STREQUAL "rv1103b" OR ${RKADK_CHIP} STREQUAL "rv1126")
+                target_link_libraries(rkadk iconv)
+        endif()
 endif()
 
 if(BUILD_STATIC_LIBRARY)
@@ -130,7 +133,10 @@ if(ENABLE_JPEG_SLICE)
 endif()
 
 if(ENABLE_STORAGE)
-	target_link_libraries(rkadk_static iconv rkfsmk)
+	target_link_libraries(rkadk_static rkfsmk)
+	if(${RKADK_CHIP} STREQUAL "rv1106" OR ${RKADK_CHIP} STREQUAL "rv1103b" OR ${RKADK_CHIP} STREQUAL "rv1126")
+		target_link_libraries(rkadk_static iconv)
+	endif()
 endif()
 endif()
 

@@ -75,7 +75,7 @@ RKADK_S32 CreatFile(char *name, long size) {
   RKADK_LOGP("Create file:%s size:%ld", name, size);
   gettimeofday(&tvAllBegin, NULL);
 
-  fd = open(name, O_CREAT | O_RDWR);
+  fd = open(name, O_CREAT | O_RDWR, 0666);
   if (fd < 0) {
     RKADK_LOGE("Open file failed.");
     return -1;
@@ -179,6 +179,11 @@ RKADK_S32 SetDevAttr(RKADK_STR_DEV_ATTR *pstDevAttr) {
 
   memset(pstDevAttr, 0, sizeof(RKADK_STR_DEV_ATTR));
   sprintf(pstDevAttr->cMountPath, "/mnt/sdcard");
+#ifdef RK3576
+  sprintf(pstDevAttr->cDevPath, "/dev/mmcblk1p1");
+#else
+  sprintf(pstDevAttr->cDevPath, "/dev/mmcblk2p1");
+#endif
   pstDevAttr->s32AutoDel = 1;
   pstDevAttr->s32FreeSizeDelMin = 200;
   pstDevAttr->s32FreeSizeDelMax = 1000;

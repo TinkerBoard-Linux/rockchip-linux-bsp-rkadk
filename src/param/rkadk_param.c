@@ -791,7 +791,7 @@ static void RKADK_PARAM_DefAudioCfg(char *path) {
   pstAudioCfg->samplerate = AUDIO_SAMPLE_RATE;
   pstAudioCfg->samples_per_frame = AUDIO_FRAME_COUNT;
   pstAudioCfg->bitrate = AUDIO_BIT_REAT;
-  pstAudioCfg->vqe_mode = RKADK_VQE_MODE_AI_RECORD;
+  pstAudioCfg->vqe_mode = RKADK_VQE_MODE_BUTT;
   memcpy(pstAudioCfg->vqe_config_path, AI_VQE_CONFIG_PATH, strlen(AI_VQE_CONFIG_PATH));
   pstAudioCfg->codec_type = RKADK_CODEC_TYPE_MP3;
   RKADK_PARAM_SaveAudioCfg(path);

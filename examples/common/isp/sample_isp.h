@@ -45,6 +45,11 @@ typedef struct {
 
 int SAMPLE_ISP_Start(RKADK_U32 u32CamId, SAMPLE_ISP_PARAM stIspParam);
 int SAMPLE_ISP_Stop(RKADK_U32 u32CamId);
+int SAMPLE_ISP_GetAINrParams(RKADK_U32 u32CamId, rk_ainr_param *param);
+int SAMPLE_ISP_GET_MirrorFlip(RKADK_U32 u32CamId, bool *mirror, bool *flip);
+int SAMPLE_ISP_SET_MirrorFlip(RKADK_U32 u32CamId, bool mirror, bool flip);
+
+#if defined(RV1106_1103) || defined(RV1103B) || defined(RV1126_1109)
 int SAMPLE_ISP_UpdateIq(RKADK_U32 u32CamId, char *iqfile);
 int SAMPLE_ISP_SET_FecEn(RKADK_U32 u32CamId, bool bFECEnable);
 int SAMPLE_ISP_GET_CCT(RKADK_U32 u32CamId, rk_aiq_wb_cct_t *pstCCT);
@@ -96,15 +101,12 @@ int SAMPLE_ISP_GET_MDhzStrth(RKADK_U32 u32CamId, bool *on,
                                unsigned int *level);
 int SAMPLE_ISP_SET_Correction(RKADK_U32 u32CamId, RKADK_S32 u32Mode,
                                 unsigned int u32Value);
-int SAMPLE_ISP_SET_MirrorFlip(RKADK_U32 u32CamId, bool mirror, bool flip);
-int SAMPLE_ISP_GET_MirrorFlip(RKADK_U32 u32CamId, bool *mirror, bool *flip);
 
 int SAMPLE_ISP_SET_Crop(RKADK_U32 u32CamId, rk_aiq_rect_t rect);
 
 int SAMPLE_ISP_Get_AiqHandle(RKADK_U32 u32CamId, RKADK_MW_PTR *ppAiqCtx);
 int SAMPLE_ISP_SingleFrame(RKADK_U32 u32CamId);
 int SAMPLE_ISP_MultiFrame(RKADK_U32 u32CamId);
-int SAMPLE_ISP_GetAINrParams(RKADK_U32 u32CamId, rk_ainr_param *param);
 int SAMPLE_ISP_RegMemsSensorIntf(RKADK_U32 u32CamId, rk_aiq_mems_sensor_intf_t *api);
 
 #ifndef RV1103B
@@ -115,6 +117,7 @@ int SAMPLE_ISP_SET_CpslCfg(RKADK_U32 u32CamId, rk_aiq_cpsl_cfg_t *cpsl);
 int SAMPLE_ISP_SET_OpenColorCloseLed(RKADK_U32 u32CamId);
 int SAMPLE_ISP_SET_GrayOpenLed(RKADK_U32 u32CamId, unsigned char u8Strength);
 int SAMPLE_ISP_SET_BypassStreamRotation(RKADK_U32 u32CamId, int S32Rotation);
+#endif
 #endif
 #endif
 

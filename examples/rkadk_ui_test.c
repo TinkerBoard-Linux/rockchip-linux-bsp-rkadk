@@ -33,7 +33,7 @@ extern int optind;
 extern char *optarg;
 
 static bool is_quit = false;
-static RKADK_CHAR optstr[] = "a:I:W:H:p:f:h";
+static RKADK_CHAR optstr[] = "a:I:W:H:p:f:l:d:h";
 
 #define IQ_FILE_PATH "/etc/iqfiles"
 
@@ -45,9 +45,11 @@ static void print_usage(const RKADK_CHAR *name) {
          "without this option aiq should run in other application\n");
   printf("\t-I: camera id, Default 0\n");
   printf("\t-p: param ini directory path, Default:/data/rkadk\n");
-  printf("\t-W: display width, default 720\n");
-  printf("\t-H: display height, default 1280\n");
+  printf("\t-W: display width, default rk3576 = 1080, other chip = 720\n");
+  printf("\t-H: display height, default rk3576 = 1920, other chip = 1280\n");
   printf("\t-f: display pixel format, option: 0(RGB888), 1(NV12), 2(RGB565), 3(RGB444); Default: 0\n");
+  printf("\t-l: ui vo layer id, Default: rk3576 = 5, other chip = 0\n");
+  printf("\t-d: ui vo device id, Default: rk3576 = 1, other chip = 0\n");
 }
 
 static void sigterm_handler(int sig) {
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]) {
   RKADK_MW_PTR pUi = NULL;
   RKADK_U32 u32CamId = 0;
   RKADK_U32 u32Size = 0;
-  RKADK_U32 u32Width = 720, u32Height = 1280;
+  RKADK_U32 u32Width, u32Height;
   RKADK_VOID *pData;
   RKADK_UI_ATTR_S stUiAttr;
   RKADK_UI_FRAME_INFO stUiFrmInfo;
@@ -76,6 +78,18 @@ int main(int argc, char *argv[]) {
 
   memset(&stIspParam, 0, sizeof(SAMPLE_ISP_PARAM));
   stIspParam.iqFileDir = IQ_FILE_PATH;
+#endif
+
+  memset(&stUiAttr, 0, sizeof(RKADK_UI_ATTR_S));
+
+#ifdef RK3576
+  u32Width = 1080;
+  u32Height = 1920;
+  stUiAttr.u32VoDev = 1;
+  stUiAttr.u32VoLay = 5;
+#else
+  u32Width = 720;
+  u32Height = 1280;
 #endif
 
   while ((c = getopt(argc, argv, optstr)) != -1) {
@@ -106,6 +120,12 @@ int main(int argc, char *argv[]) {
     case 'f':
       u32VoFormat = atoi(optarg);
       break;
+    case 'l':
+      stUiAttr.u32VoLay = atoi(optarg);
+      break;
+    case 'd':
+      stUiAttr.u32VoDev = atoi(optarg);
+      break;
     case 'h':
     default:
       print_usage(argv[0]);
@@ -116,8 +136,6 @@ int main(int argc, char *argv[]) {
   optind = 0;
 
   RKADK_LOGP("#camera id: %d", u32CamId);
-
-  memset(&stUiAttr, 0, sizeof(RKADK_UI_ATTR_S));
 
   if (u32VoFormat == 1)
     stUiAttr.enUiVoFormat = VO_FORMAT_NV12;

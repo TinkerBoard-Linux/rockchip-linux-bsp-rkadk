@@ -48,6 +48,33 @@ extern "C" {
 #define DEF_WIDTH_VI_2 1280
 #define DEF_HEIGHT_VI_2 720
 
+#elif RK3576
+// rkisp_mainpath rkisp_selfpath
+#define RKADK_ISPP_VI_NODE_CNT 2
+
+/* sensor default parameters */
+#define SENSOR_MAX_WIDTH 3840
+#define SENSOR_MAX_HEIGHT 2160
+
+//default vi device name
+#define DEF_DEVICE_NEME_VI_0 "rkisp_mainpath"
+#define DEF_DEVICE_NEME_VI_1 "rkisp_selfpath"
+#define DEF_DEVICE_NEME_VI_2 "NONE"
+#define DEF_DEVICE_NEME_VI_3 "NONE"
+
+// default vi module
+#define DEF_MODULE_VI_0 "RECORD_MAIN|PHOTO"
+#define DEF_MODULE_VI_1 "RECORD_SUB|PREVIEW|LIVE|DISP|THUMB"
+#define DEF_MODULE_VI_2 "NONE"
+#define DEF_MODULE_VI_3 "NONE"
+
+//default vi resolution
+#define DEF_WIDTH_VI_1 320
+#define DEF_HEIGHT_VI_1 180
+
+#define DEF_WIDTH_VI_2 1280
+#define DEF_HEIGHT_VI_2 720
+
 #else
 // rkispp_m_bypass rkispp_scale0 rkispp_scale1 rkispp_scale2
 #define RKADK_ISPP_VI_NODE_CNT 4

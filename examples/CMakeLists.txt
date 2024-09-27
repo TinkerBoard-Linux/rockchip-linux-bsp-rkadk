@@ -7,12 +7,12 @@ string(REGEX REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE
 
 aux_source_directory(common/mp3_header MP3_SRC)
 
-if(${RKADK_CHIP} STREQUAL "rv1106")
-	file(GLOB ISP_SRC "common/isp/sample_aiq_uapi2.c")
+if(${RKADK_CHIP} STREQUAL "rv1126")
+	file(GLOB ISP_SRC "common/isp/sample_aiq_uapi1.c")
 elseif(${RKADK_CHIP} STREQUAL "rv1103b")
 	file(GLOB ISP_SRC "common/isp/rv1103b/sample_aiq_uapi2.c")
 else()
-	file(GLOB ISP_SRC "common/isp/sample_aiq_uapi1.c")
+	file(GLOB ISP_SRC "common/isp/sample_aiq_uapi2.c")
 endif()
 
 if(ENABLE_EIS)

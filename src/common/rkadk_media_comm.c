@@ -225,6 +225,7 @@ static RKADK_U32 RKADK_MPI_VO_CreateLayDev(RKADK_S32 s32VoLay, RKADK_S32 s32VoDe
   VO_SPLICE_MODE_E enSpliceMode = VO_SPLICE_MODE_RGA;
 
   if (!g_bVoLayerDevInitCnt[s32VoLay][s32VoDev]) {
+    //If multiple layer overlay, set one to VO_LAYER_MODE_VIDEO and the other to VO_LAYER_MODE_GRAPHIC
     ret = RK_MPI_VO_BindLayer(s32VoLay, s32VoDev, VO_LAYER_MODE_GRAPHIC);
     if (ret) {
       RKADK_LOGE("RK_MPI_VO_BindLayer[%d, %d] failed[%x]", s32VoLay, s32VoDev, ret);
@@ -1690,9 +1691,10 @@ RKADK_MEDIA_StopGetVencBuffer(RKADK_U32 u32CamId, MPP_CHN_S *pstChn, bool bIsAov
   if (!pstMediaInfo->stGetVencMBAttr.s32GetCnt) {
     pstMediaInfo->stGetVencMBAttr.bGetBuffer = false;
     if (pstMediaInfo->stGetVencMBAttr.tid) {
+#ifdef ENABLE_AOV
       if (bIsAovMode)
         RK_MPI_VI_DevEnableSinglelFrame(u32CamId, 1);
-
+#endif
       RKADK_LOGD("ChnId[%d] request to cancel venc mb thread...", pstMediaInfo->s32ChnId);
       ret = pthread_join(pstMediaInfo->stGetVencMBAttr.tid, NULL);
       if (ret)
@@ -2738,7 +2740,7 @@ int RKADK_MEDIA_VencResetCheck(RKADK_U32 u32CamId, RKADK_PARAM_VENC_ATTR_S attri
   bReset = RKADK_MEDIA_CompareResolution(&stVencAttr, attribute.width, attribute.height);
   if (bReset) {
 #if !defined(RV1106_1103) && !defined(RV1103B)
-    RKADK_LOGD("rv1126/1109 nonsupport dynamic setting resolution");
+    RKADK_LOGD("nonsupport dynamic setting resolution");
     return -1;
 #endif
   }
