@@ -371,6 +371,7 @@ static RKADK_S32 CreateVdec(RKADK_PLAYER_VDEC_CTX_S *pstVdecCtx) {
   if (!pstVdecCtx->bEnableColmv)
     stAttr.stVdecVideoAttr.bTemporalMvpEnable = RK_FALSE;
 
+  stAttr.u32FrameBufDepth = stAttr.u32StreamBufCnt;
   ret = RK_MPI_VDEC_CreateChn(pstVdecCtx->chnIndex, &stAttr);
   if (ret != RK_SUCCESS) {
     RKADK_LOGE("Create vdec chn[%d] failed[%x]", pstVdecCtx->chnIndex, ret);
