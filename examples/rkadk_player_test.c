@@ -37,7 +37,7 @@
 extern int optind;
 extern char *optarg;
 static bool is_quit = false;
-static RKADK_CHAR optstr[] = "i:x:y:W:H:r:a:s:P:I:t:F:T:l:c:d:O:S:V:R:w:C:A:M:mfvbDh";
+static RKADK_CHAR optstr[] = "i:x:y:W:H:r:a:s:P:I:t:F:T:l:c:d:O:S:V:R:w:C:A:M:N:mfvbDh";
 
 static RKADK_VOID *mDemuxerCfg = NULL;
 static void print_usage(const RKADK_CHAR *name) {
@@ -74,6 +74,7 @@ static void print_usage(const RKADK_CHAR *name) {
   printf("\t-C: Ao sound card name, Default: RV1106/RV1103/RK3506 = hw:0,0, other chip = default\n");
   printf("\t-V: ao volume, Default: 70\n");
   printf("\t-A: ao sound card samplerate, Default: 16000\n");
+  printf("\t-N: ao sound card channel index, Default: 0\n");
   printf("\t-h: help\n");
 }
 
@@ -497,6 +498,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'R':
       stPlayCfg.stAudioCfg.u32AoSampleRate = atoi(optarg);
+      break;
+    case 'N':
+      stPlayCfg.stAudioCfg.u32AoChnId = atoi(optarg);
       break;
     case 'h':
     default:
