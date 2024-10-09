@@ -56,7 +56,7 @@ if(BUILD_EXAMPLES)
 endif()
 
 #Install rkadk default configuration file
-if(${RKADK_CHIP} STREQUAL "rv1106")
+if(${RKADK_CHIP} STREQUAL "rv1106" OR ${RKADK_CHIP} STREQUAL "rv1103b")
 	set(RKADK_INICFG_PATH inicfg/rv1106_1103)
 elseif(${RKADK_CHIP} STREQUAL "rv1126")
 	set(RKADK_INICFG_PATH inicfg/rv1126_1109)
