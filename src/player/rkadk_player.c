@@ -3470,5 +3470,7 @@ RKADK_S32 RKADK_PLAYER_SetAoVolume(RKADK_MW_PTR pPlayer, RKADK_S32 s32Volume) {
   }
 
   pstPlayer->stAoCtx.u32SpeakerVolume = s32Volume;
+  if (pstPlayer->bEnableAudio)
+    RK_MPI_AO_SetVolume(pstPlayer->stAoCtx.devId, pstPlayer->stAoCtx.u32SpeakerVolume);
   return 0;
 }
