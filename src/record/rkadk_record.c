@@ -595,7 +595,7 @@ static int RKADK_RECORD_DestoryAvsChn(RKADK_PIP_ATTR_S stPipAttr) {
   return 0;
 }
 
-static int RKADK_RECORD_CreateVideoChn(RKADK_RECORD_ATTR_S *pstRecAttr, bool *pbUseVpss) {
+static int RKADK_RECORD_CreateVideoChn(RKADK_RECORD_ATTR_S *pstRecAttr, bool *pbUseVpss, RKADK_U32 u32VpssBufCnt) {
   int ret = 0, i;
   RKADK_U32 u32VpssGrp, u32VpssChn;
   VENC_CHN_ATTR_S stVencChnAttr;
@@ -607,7 +607,6 @@ static int RKADK_RECORD_CreateVideoChn(RKADK_RECORD_ATTR_S *pstRecAttr, bool *pb
   VPSS_CHN_ATTR_S stChnAttr;
   RKADK_THUMB_MODULE_E enThumbModule = RKADK_THUMB_MODULE_BUTT;
   RKADK_STREAM_TYPE_E enStrmType;
-  RKADK_U32 u32VpssBufCnt = 0;
 
   pstRecCfg = RKADK_PARAM_GetRecCfg(pstRecAttr->s32CamID);
   if (!pstRecCfg) {
@@ -1761,6 +1760,7 @@ RKADK_S32 RKADK_RECORD_Create(RKADK_RECORD_ATTR_S *pstRecAttr,
   bool bEnableAudio = false;
   bool bUseVpss[RECORD_FILE_NUM_MAX];
   RKADK_PARAM_REC_CFG_S *pstRecCfg = NULL;
+  RKADK_U32 u32VpssBufCnt = 0;
 
   RKADK_CHECK_POINTER(pstRecAttr, RKADK_FAILURE);
   RKADK_CHECK_CAMERAID(pstRecAttr->s32CamID, RKADK_FAILURE);
@@ -1782,9 +1782,9 @@ RKADK_S32 RKADK_RECORD_Create(RKADK_RECORD_ATTR_S *pstRecAttr,
 
   for (int i = 0; i < pstRecCfg->file_num; i++)
     bUseVpss[i] = RKADK_MEDIA_VideoIsUseVpss(pstRecAttr->s32CamID, pstRecAttr->stPipAttr[i].bEnablePip,
-                                                 NULL, pstRecCfg->vi_attr[i], pstRecCfg->attribute[i]);
+                                                 &u32VpssBufCnt, pstRecCfg->vi_attr[i], pstRecCfg->attribute[i]);
 
-  if (RKADK_RECORD_CreateVideoChn(pstRecAttr, bUseVpss))
+  if (RKADK_RECORD_CreateVideoChn(pstRecAttr, bUseVpss, u32VpssBufCnt))
     return -1;
 
   bEnableAudio = RKADK_MUXER_EnableAudio(pstRecAttr->s32CamID);
