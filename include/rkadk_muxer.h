@@ -218,6 +218,7 @@ typedef struct {
   RKADK_AOV_ATTR_S stAovAttr;
   RKADK_MOUMNT_SDCARD_FN pfnMountSdcard;
   RKADK_PIP_ATTR_S stPipAttr[RECORD_FILE_NUM_MAX];
+  RKADK_U32 u32GetThumbTime[RECORD_FILE_NUM_MAX];
 } RKADK_MUXER_ATTR_S;
 
 typedef enum {

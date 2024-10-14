@@ -47,6 +47,7 @@ typedef struct {
   RKADK_POST_ISP_ATTR_S *pstPostIspAttr;
   RKADK_MOUMNT_SDCARD_FN pfnMountSdcard;
   RKADK_PIP_ATTR_S stPipAttr[RECORD_FILE_NUM_MAX];
+  RKADK_U32 u32GetThumbTime[RECORD_FILE_NUM_MAX];       /* get thumbnail delay time(ms) when enbale file cache, default: 3000(ms) */
 } RKADK_RECORD_ATTR_S;
 
 /****************************************************************************/

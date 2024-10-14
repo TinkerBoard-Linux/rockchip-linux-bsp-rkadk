@@ -1808,7 +1808,8 @@ RKADK_S32 RKADK_RECORD_Create(RKADK_RECORD_ATTR_S *pstRecAttr,
   stMuxerAttr.pfnPtsCallback = pstRecAttr->pfnPtsCallback;
   stMuxerAttr.pfnMountSdcard = pstRecAttr->pfnMountSdcard;
   memcpy(&stMuxerAttr.stAovAttr, &pstRecAttr->stAovAttr, sizeof(RKADK_AOV_ATTR_S));
-  memcpy(&stMuxerAttr.stPipAttr, &pstRecAttr->stPipAttr, sizeof(RKADK_PIP_ATTR_S) * RECORD_FILE_NUM_MAX);
+  memcpy(stMuxerAttr.stPipAttr, pstRecAttr->stPipAttr, sizeof(RKADK_PIP_ATTR_S) * RECORD_FILE_NUM_MAX);
+  memcpy(stMuxerAttr.u32GetThumbTime, pstRecAttr->u32GetThumbTime, sizeof(RKADK_U32) * RECORD_FILE_NUM_MAX);
 
   if (RKADK_MUXER_Create(&stMuxerAttr, ppRecorder))
     goto failed;

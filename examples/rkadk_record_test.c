@@ -32,7 +32,7 @@
 extern int optind;
 extern char *optarg;
 
-static RKADK_CHAR optstr[] = "a:I:p:m:c:kPeh";
+static RKADK_CHAR optstr[] = "a:I:p:m:c:t:kPeh";
 
 static bool is_quit = false;
 #define IQ_FILE_PATH "/etc/iqfiles"
@@ -49,6 +49,7 @@ static void print_usage(const RKADK_CHAR *name) {
   printf("\t-m: multiple sensors, Default:0, options: 1(all isp sensors), 2(isp+ahd sensors)\n");
   printf("\t-P: enable pip, Default:disble\n");
   printf("\t-c: pip avs buffer count, Default:2\n");
+  printf("\t-t: get thumbnail delay time(ms) when enbale file cache, Default:3000(ms)\n");
 #ifdef ENABLE_EIS
   printf("\t-e: enable eis, Default: disable\n");
 #endif
@@ -218,6 +219,7 @@ int main(int argc, char *argv[]) {
   bool bEnablePip = false;
   RKADK_U32 u32AvsBufCnt = 2;
   bool bEnableAudio = true;
+  RKADK_U32 u32GetThumbTime = 0;
 
 #ifdef ENABLE_EIS
   bool bEnableEis = false;
@@ -280,6 +282,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'c':
       u32AvsBufCnt = atoi(optarg);
+      break;
+    case 't':
+      u32GetThumbTime = atoi(optarg);
       break;
     case 'h':
     default:
@@ -387,6 +392,8 @@ record:
   stRecAttr.pfnEventCallback = RecordEventCallback;
   stRecAttr.pstPostIspAttr = &stPostIspAttr;
   stRecAttr.pfnPtsCallback = RecordPtsCallback;
+  stRecAttr.u32GetThumbTime[0] = u32GetThumbTime;
+  stRecAttr.u32GetThumbTime[1] = u32GetThumbTime;
 
   if (bEnablePip) {
     //set main record pip attr

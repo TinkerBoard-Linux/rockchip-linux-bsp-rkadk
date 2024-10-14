@@ -136,6 +136,7 @@ typedef struct {
   pthread_mutex_t paramMutex;
   RKADK_MUXER_REQUEST_FILE_NAME_CB pcbRequestFileNames;
   RKADK_MUXER_EVENT_CALLBACK_FN pfnEventCallback;
+  RKADK_U32 u32GetThumbTime; //ms
 
   void *pThread;
   pthread_mutex_t mutex;
@@ -1390,7 +1391,7 @@ static bool RKADK_MUXER_Proc(void *params) {
 
           if (pstMuxerHandle->stThumbParam.bGetThumb) {
             if (pstMuxer->enableFileCache) {
-              if (pstMuxerHandle->realDuration >= 3000)
+              if (pstMuxerHandle->realDuration >= pstMuxerHandle->u32GetThumbTime)
                 pstMuxerHandle->stThumbParam.bGetThumb = RKADK_MUXER_GetThumb(pstMuxerHandle);
             } else {
               pstMuxerHandle->stThumbParam.bGetThumb = RKADK_MUXER_GetThumb(pstMuxerHandle);
@@ -1578,6 +1579,11 @@ RKADK_S32 RKADK_MUXER_Enable(RKADK_MUXER_ATTR_S *pstMuxerAttr,
     pMuxerHandle->bFirstFile = true;
     pMuxerHandle->bFirstKeyFrame = true;
     pMuxerHandle->bWriteFirstFrame = true;
+
+    if (pstMuxerAttr->u32GetThumbTime[i] > 0)
+      pMuxerHandle->u32GetThumbTime = pstMuxerAttr->u32GetThumbTime[i];
+    else
+      pMuxerHandle->u32GetThumbTime = 3000;
 
     memcpy(&pMuxerHandle->stPreRecParam.stAttr, &pstMuxerAttr->stPreRecordAttr,
             sizeof(RKADK_MUXER_PRE_RECORD_ATTR_S));
