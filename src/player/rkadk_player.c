@@ -241,15 +241,6 @@ typedef struct {
   RKADK_U32 u32VdecWaterline; /* frames = left frames waiting for decode + pics waiting for output */
 } RKADK_PLAYER_HANDLE_S;
 
-#ifdef OS_RTT
-void rkadk_gettime(struct timeval *tv) {
-  int tick = rt_tick_get();
-  tv->tv_sec = tick / RT_TICK_PER_SECOND;
-  tv->tv_usec = tick % RT_TICK_PER_SECOND;
-  tv->tv_usec = tv->tv_usec * (1000000 / RT_TICK_PER_SECOND);
-}
-#endif
-
 static void RKADK_PLAYER_ProcessEvent(RKADK_PLAYER_HANDLE_S *pstPlayer,
                                             RKADK_PLAYER_EVENT_E enEvent,
                                             RKADK_VOID *pData) {
@@ -1168,13 +1159,7 @@ static void SendVideoData(RKADK_VOID *ptr) {
   VIDEO_FRAME_INFO_S sFrame;
   VIDEO_FRAME_INFO_S tFrame;
 
-#ifndef OS_RTT
   struct timespec t_begin, t_end;
-#else
-  struct timeval t_begin = {0};
-  struct timeval t_end = {0};
-#endif
-
   RKADK_S32 ret = 0;
   RKADK_S32 flagGetTframe = 0;
   RKADK_S32 voSendTime = 0, frameTime = 0, costtime = 0;
@@ -1241,18 +1226,9 @@ static void SendVideoData(RKADK_VOID *ptr) {
             pstPlayer->positionTimeStamp = sFrame.stVFrame.u64PTS;
         }
 
-#ifndef OS_RTT
         clock_gettime(CLOCK_MONOTONIC, &t_end);
-#else
-        rkadk_gettime(&t_end);
-#endif
-
         if (pstPlayer->videoTimeStamp >= 0) {
-#ifndef OS_RTT
           costtime = (t_end.tv_sec - t_begin.tv_sec) * 1000000 + (t_end.tv_nsec - t_begin.tv_nsec) / 1000;
-#else
-          costtime = (t_end.tv_sec - t_begin.tv_sec) * 1000000 + t_end.tv_usec - t_begin.tv_usec;
-#endif
           if ((RKADK_S64)sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp > (RKADK_S64)costtime) {
             voSendTime = sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp - costtime;
 
@@ -1277,12 +1253,7 @@ static void SendVideoData(RKADK_VOID *ptr) {
         if (ret != RK_SUCCESS)
           RKADK_LOGE("send vo failed[%x]", ret);
 
-#ifndef OS_RTT
         clock_gettime(CLOCK_MONOTONIC, &t_begin);
-#else
-        rkadk_gettime(&t_begin);
-#endif
-
         if (!pstPlayer->bIsNetRTStream) {
 #ifndef OS_RTT
           usleep(voSendTime);
