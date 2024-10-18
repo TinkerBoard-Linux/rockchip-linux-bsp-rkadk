@@ -1498,7 +1498,7 @@ static void SendData(RKADK_VOID *ptr) {
       break;
     }
 
-    if (pstPlayer->videoTimeStamp < 0) {
+    if (pstPlayer->videoTimeStamp == -1 && !flagVideoEnd) {
       while (pstPlayer->videoTimeStamp < pstPlayer->seekTimeStamp) {
         ret = RK_MPI_VDEC_GetFrame(pstPlayer->stVdecCtx.chnIndex, &sFrame, -1);
         if (ret == 0) {
