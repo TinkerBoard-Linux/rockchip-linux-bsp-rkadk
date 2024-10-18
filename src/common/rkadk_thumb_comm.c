@@ -191,7 +191,7 @@ static int RKADK_Thumbnail_Venc(RKADK_U32 u32CamId, RKADK_S32 ChnId,
 
   memset(&stAttr, 0, sizeof(stAttr));
   stAttr.stVencAttr.enType = RK_VIDEO_ID_JPEG;
-  stAttr.stVencAttr.enPixelFormat = RK_FMT_YUV420SP;
+  stAttr.stVencAttr.enPixelFormat = ptsThumbCfg->vi_attr.stChnAttr.enPixelFormat;
   stAttr.stVencAttr.u32MaxPicWidth = ptsThumbCfg->thumb_width;
   stAttr.stVencAttr.u32MaxPicHeight = ptsThumbCfg->thumb_height;
   stAttr.stVencAttr.u32PicWidth = ptsThumbCfg->thumb_width;

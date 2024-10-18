@@ -403,11 +403,8 @@ static int RKADK_RECORD_SetVideoAttr(int index, RKADK_U32 u32CamId,
     return -1;
   }
 
-  pstVencAttr->stVencAttr.enType =
-      RKADK_MEDIA_GetRkCodecType(pstRecCfg->attribute[index].codec_type);
-  pstVencAttr->stVencAttr.enPixelFormat =
-      pstRecCfg->vi_attr[index].stChnAttr.enPixelFormat;
-
+  pstVencAttr->stVencAttr.enType = RKADK_MEDIA_GetRkCodecType(pstRecCfg->attribute[index].codec_type);
+  pstVencAttr->stVencAttr.enPixelFormat = pstRecCfg->vi_attr[index].stChnAttr.enPixelFormat;
   pstVencAttr->stVencAttr.u32MaxPicWidth = pstRecCfg->attribute[index].max_width;
   pstVencAttr->stVencAttr.u32MaxPicHeight = pstRecCfg->attribute[index].max_height;
   pstVencAttr->stVencAttr.u32BufSize = pstRecCfg->attribute[index].bufsize;

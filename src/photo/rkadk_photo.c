@@ -753,8 +753,7 @@ static int RKADK_PHOTO_SetVencAttr(RKADK_PHOTO_HANDLE_S *pHandle,
 
   memset(pstVencAttr, 0, sizeof(VENC_CHN_ATTR_S));
   pstVencAttr->stVencAttr.enType = RK_VIDEO_ID_JPEG;
-  pstVencAttr->stVencAttr.enPixelFormat =
-      pstPhotoCfg->vi_attr.stChnAttr.enPixelFormat;
+  pstVencAttr->stVencAttr.enPixelFormat = pstPhotoCfg->vi_attr.stChnAttr.enPixelFormat;
   pstVencAttr->stVencAttr.u32MaxPicWidth = u32MaxWidth;
   pstVencAttr->stVencAttr.u32MaxPicHeight = u32MaxHeight;
   pstVencAttr->stVencAttr.u32PicWidth = pstPhotoCfg->image_width;

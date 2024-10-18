@@ -213,10 +213,8 @@ static int RKADK_STREAM_SetVencAttr(RKADK_U32 u32CamId,
     return -1;
   }
 
-  pstVencAttr->stVencAttr.enType =
-      RKADK_MEDIA_GetRkCodecType(pstStreamCfg->attribute.codec_type);
-  pstVencAttr->stVencAttr.enPixelFormat =
-      pstStreamCfg->vi_attr.stChnAttr.enPixelFormat;
+  pstVencAttr->stVencAttr.enType = RKADK_MEDIA_GetRkCodecType(pstStreamCfg->attribute.codec_type);
+  pstVencAttr->stVencAttr.enPixelFormat = pstStreamCfg->vi_attr.stChnAttr.enPixelFormat;
   pstVencAttr->stVencAttr.u32MaxPicWidth = pstStreamCfg->attribute.max_width;
   pstVencAttr->stVencAttr.u32MaxPicHeight = pstStreamCfg->attribute.max_height;
   pstVencAttr->stVencAttr.u32PicWidth = pstStreamCfg->attribute.width;
