@@ -1067,14 +1067,16 @@ static RKADK_S32 RKADK_PLAYER_SendVoFrame(RKADK_PLAYER_HANDLE_S *pstPlayer, VIDE
     RKADK_LOGE("sys mmz flush cache failed[%x]", ret);
 
   // save snapshot frame info
-  pthread_mutex_lock(&pstPlayer->stSnapshotParam.mutex);
-  pstPlayer->stSnapshotParam.stFrame.u32Width = sFrame->stVFrame.u32Width;
-  pstPlayer->stSnapshotParam.stFrame.u32Height = sFrame->stVFrame.u32Height;
-  pstPlayer->stSnapshotParam.stFrame.u32VirWidth = sFrame->stVFrame.u32VirWidth;
-  pstPlayer->stSnapshotParam.stFrame.u32VirHeight = sFrame->stVFrame.u32VirHeight;
-  pstPlayer->stSnapshotParam.stFrame.pMbBlk = sFrame->stVFrame.pMbBlk;
-  pstPlayer->stSnapshotParam.stFrame.enPixelFormat = sFrame->stVFrame.enPixelFormat;
-  pthread_mutex_unlock(&pstPlayer->stSnapshotParam.mutex);
+  if (pstPlayer->stSnapshotParam.pfnDataCallback) {
+    pthread_mutex_lock(&pstPlayer->stSnapshotParam.mutex);
+    pstPlayer->stSnapshotParam.stFrame.u32Width = sFrame->stVFrame.u32Width;
+    pstPlayer->stSnapshotParam.stFrame.u32Height = sFrame->stVFrame.u32Height;
+    pstPlayer->stSnapshotParam.stFrame.u32VirWidth = sFrame->stVFrame.u32VirWidth;
+    pstPlayer->stSnapshotParam.stFrame.u32VirHeight = sFrame->stVFrame.u32VirHeight;
+    pstPlayer->stSnapshotParam.stFrame.pMbBlk = sFrame->stVFrame.pMbBlk;
+    pstPlayer->stSnapshotParam.stFrame.enPixelFormat = sFrame->stVFrame.enPixelFormat;
+    pthread_mutex_unlock(&pstPlayer->stSnapshotParam.mutex);
+  }
 
   ret = RK_MPI_VO_SendFrame(pstPlayer->stVoCtx.u32VoLay, pstPlayer->stVoCtx.u32VoChn, sFrame, s32MilliSec);
   if (ret != RK_SUCCESS)
