@@ -51,6 +51,7 @@ typedef struct {
   RKADK_S32 s32GetCnt;
   pthread_t tid;
   RKADK_GET_AENC_CB_ATTR_S cb[RKADK_MEDIA_AENC_MAX_CNT];
+  pthread_mutex_t mutex;
 } RKADK_GET_AENC_MB_ATTR_S;
 
 typedef struct {
@@ -60,6 +61,7 @@ typedef struct {
   RKADK_GET_VENC_CB_ATTR_S cb[RKADK_MEDIA_VENC_MAX_CNT];
   RKADK_S64 s64RecentPts;
   RKADK_U64 u64TimeoutCnt; //Continuous timeout count
+  pthread_mutex_t mutex;
 } RKADK_GET_VENC_MB_ATTR_S;
 
 typedef struct {
@@ -167,6 +169,14 @@ static int RKADK_MEDIA_CtxInit() {
   ret |= pthread_mutex_init(&g_stMediaCtx.voMutex, NULL);
   ret |= pthread_mutex_init(&g_stMediaCtx.bindMutex, NULL);
 
+  for (int i = 0; i < RKADK_MEDIA_VENC_MAX_CNT; i++) {
+    ret |= pthread_mutex_init(&g_stMediaCtx.stVencInfo[i].stGetVencMBAttr.mutex, NULL);
+  }
+
+  for (int i = 0; i < RKADK_MEDIA_AENC_MAX_CNT; i++) {
+    ret |= pthread_mutex_init(&g_stMediaCtx.stAencInfo[i].stGetAencMBAttr.mutex, NULL);
+  }
+
   if (ret) {
     RKADK_LOGE("pthread_mutex_init failed[%d]", ret);
     return -1;
@@ -185,6 +195,14 @@ static int RKADK_MEDIA_CtxDeInit() {
   ret |= pthread_mutex_destroy(&g_stMediaCtx.vpssMutex);
   ret |= pthread_mutex_destroy(&g_stMediaCtx.voMutex);
   ret |= pthread_mutex_destroy(&g_stMediaCtx.bindMutex);
+
+  for (int i = 0; i < RKADK_MEDIA_VENC_MAX_CNT; i++) {
+    ret |= pthread_mutex_destroy(&g_stMediaCtx.stVencInfo[i].stGetVencMBAttr.mutex);
+  }
+
+  for (int i = 0; i < RKADK_MEDIA_AENC_MAX_CNT; i++) {
+    ret |= pthread_mutex_destroy(&g_stMediaCtx.stAencInfo[i].stGetAencMBAttr.mutex);
+  }
 
   if (ret) {
     RKADK_LOGE("pthread_mutex_destroy failed[%d]", ret);
@@ -1399,10 +1417,12 @@ static void *RKADK_MEDIA_GetAencMb(void *params) {
   while (pstMediaInfo->stGetAencMBAttr.bGetBuffer) {
     ret = RK_MPI_AENC_GetStream(pstMediaInfo->s32ChnId, &stFrame, 1200);
     if (ret == RK_SUCCESS) {
+      RKADK_MUTEX_LOCK(pstMediaInfo->stGetAencMBAttr.mutex);
       for (int i = 0; i < RKADK_MEDIA_AENC_MAX_CNT; i++) {
         if (pstMediaInfo->stGetAencMBAttr.cb[i].bUsed && pstMediaInfo->stGetAencMBAttr.cb[i].cbList)
           pstMediaInfo->stGetAencMBAttr.cb[i].cbList(stFrame, pstMediaInfo->stGetAencMBAttr.cb[i].pHandle);
       }
+      RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetAencMBAttr.mutex);
 
       ret = RK_MPI_AENC_ReleaseStream(pstMediaInfo->s32ChnId, &stFrame);
       if (ret)
@@ -1438,6 +1458,7 @@ RKADK_S32 RKADK_MEDIA_GetAencBuffer(MPP_CHN_S *pstChn,
     goto exit;
   }
 
+  RKADK_MUTEX_LOCK(pstMediaInfo->stGetAencMBAttr.mutex);
   for (j = 0; j < RKADK_MEDIA_AENC_MAX_CNT; j++) {
     if (!pstMediaInfo->stGetAencMBAttr.cb[j].bUsed)
       break;
@@ -1445,6 +1466,7 @@ RKADK_S32 RKADK_MEDIA_GetAencBuffer(MPP_CHN_S *pstChn,
 
   if (j == RKADK_MEDIA_AENC_MAX_CNT) {
     RKADK_LOGE("not find usable aenc cb index");
+    RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetAencMBAttr.mutex);
     goto exit;
   }
 
@@ -1453,6 +1475,7 @@ RKADK_S32 RKADK_MEDIA_GetAencBuffer(MPP_CHN_S *pstChn,
   pstMediaInfo->stGetAencMBAttr.cb[j].bUsed = true;
   pstMediaInfo->stGetAencMBAttr.s32GetCnt++;
   RKADK_LOGD("find usable stAencInfo[%d] cb[%d] s32GetCnt[%d]", i, j, pstMediaInfo->stGetAencMBAttr.s32GetCnt);
+  RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetAencMBAttr.mutex);
 
   if (pstMediaInfo->stGetAencMBAttr.bGetBuffer) {
     RKADK_LOGE("Get aencChnId[%d] MB thread has been created, s32GetCnt[%d]",
@@ -1501,6 +1524,7 @@ RKADK_MEDIA_StopGetAencBuffer(MPP_CHN_S *pstChn,
     goto exit;
   }
 
+  RKADK_MUTEX_LOCK(pstMediaInfo->stGetAencMBAttr.mutex);
   for (int j = 0; j < RKADK_MEDIA_AENC_MAX_CNT; j++) {
     if (pstMediaInfo->stGetAencMBAttr.cb[j].bUsed
         && pstMediaInfo->stGetAencMBAttr.cb[j].cbList == pfnDataCB
@@ -1513,6 +1537,7 @@ RKADK_MEDIA_StopGetAencBuffer(MPP_CHN_S *pstChn,
       break;
     }
   }
+  RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetAencMBAttr.mutex);
 
   if (!pstMediaInfo->stGetAencMBAttr.s32GetCnt) {
     pstMediaInfo->stGetAencMBAttr.bGetBuffer = false;
@@ -1549,12 +1574,13 @@ static void *RKADK_MEDIA_GetVencMb(void *params) {
   stData.u32ChnId = pstMediaInfo->s32ChnId;
   while (pstMediaInfo->stGetVencMBAttr.bGetBuffer) {
     ret = RK_MPI_VENC_GetStream(pstMediaInfo->s32ChnId, &stData.stFrame, 2000);
-
     if (ret == RK_SUCCESS) {
+      RKADK_MUTEX_LOCK(pstMediaInfo->stGetVencMBAttr.mutex);
       for (int i = 0; i < RKADK_MEDIA_VENC_MAX_CNT; i++) {
         if (pstMediaInfo->stGetVencMBAttr.cb[i].bUsed && pstMediaInfo->stGetVencMBAttr.cb[i].cbList)
           pstMediaInfo->stGetVencMBAttr.cb[i].cbList(stData, pstMediaInfo->stGetVencMBAttr.cb[i].pHandle);
       }
+      RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetVencMBAttr.mutex);
 
       pstMediaInfo->stGetVencMBAttr.s64RecentPts = stData.stFrame.pstPack->u64PTS;
       pstMediaInfo->stGetVencMBAttr.u64TimeoutCnt = 0;
@@ -1613,6 +1639,7 @@ RKADK_S32 RKADK_MEDIA_GetVencBuffer(MPP_CHN_S *pstChn,
     goto exit;
   }
 
+  RKADK_MUTEX_LOCK(pstMediaInfo->stGetVencMBAttr.mutex);
   for (j = 0; j < RKADK_MEDIA_VENC_MAX_CNT; j++) {
     if (!pstMediaInfo->stGetVencMBAttr.cb[j].bUsed)
       break;
@@ -1620,6 +1647,7 @@ RKADK_S32 RKADK_MEDIA_GetVencBuffer(MPP_CHN_S *pstChn,
 
   if (j == RKADK_MEDIA_VENC_MAX_CNT) {
     RKADK_LOGE("not find usable venc cb index");
+    RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetVencMBAttr.mutex);
     goto exit;
   }
 
@@ -1628,6 +1656,7 @@ RKADK_S32 RKADK_MEDIA_GetVencBuffer(MPP_CHN_S *pstChn,
   pstMediaInfo->stGetVencMBAttr.cb[j].bUsed = true;
   pstMediaInfo->stGetVencMBAttr.s32GetCnt++;
   RKADK_LOGD("find usable stVencInfo[%d] cb[%d] s32GetCnt[%d]", i, j, pstMediaInfo->stGetVencMBAttr.s32GetCnt);
+  RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetVencMBAttr.mutex);
 
   if (pstMediaInfo->stGetVencMBAttr.bGetBuffer) {
     RKADK_LOGE("Get vencChnId[%d] MB thread has been created, s32GetCnt[%d]",
@@ -1675,6 +1704,7 @@ RKADK_MEDIA_StopGetVencBuffer(RKADK_U32 u32CamId, MPP_CHN_S *pstChn, bool bIsAov
     goto exit;
   }
 
+  RKADK_MUTEX_LOCK(pstMediaInfo->stGetVencMBAttr.mutex);
   for (int j = 0; j < RKADK_MEDIA_VENC_MAX_CNT; j++) {
     if (pstMediaInfo->stGetVencMBAttr.cb[j].bUsed
         && pstMediaInfo->stGetVencMBAttr.cb[j].cbList == pfnDataCB
@@ -1687,6 +1717,7 @@ RKADK_MEDIA_StopGetVencBuffer(RKADK_U32 u32CamId, MPP_CHN_S *pstChn, bool bIsAov
       break;
     }
   }
+  RKADK_MUTEX_UNLOCK(pstMediaInfo->stGetVencMBAttr.mutex);
 
   if (!pstMediaInfo->stGetVencMBAttr.s32GetCnt) {
     pstMediaInfo->stGetVencMBAttr.bGetBuffer = false;
