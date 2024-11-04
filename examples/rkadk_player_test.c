@@ -212,6 +212,7 @@ RKADK_VOID *GetPosition(RKADK_VOID *arg) {
     while (!is_quit) {
       position = RKADK_PLAYER_GetCurrentPosition(arg);
       printf("position = %lld\n", position);
+
 #ifndef OS_RTT
       usleep(1000000);
 #else
@@ -312,8 +313,8 @@ static int DemuxerSetDataParam(RKADK_MW_PTR pPlayer, char *file,
   stDemuxerInput.readModeFlag = DEMUXER_TYPE_PASSIVE;
   stDemuxerInput.videoEnableFlag = stPlayCfg.bEnableVideo;
   stDemuxerInput.audioEnableFlag = stPlayCfg.bEnableAudio;
-  stDemuxerInput.transport = stPlayCfg.stRtspCfg.transport;
-  stDemuxerInput.u32IoTimeout = stPlayCfg.stRtspCfg.u32IoTimeout;
+  stDemuxerInput.transport = stPlayCfg.stNetStreamCfg.transport;
+  stDemuxerInput.u32IoTimeout = stPlayCfg.stNetStreamCfg.u32IoTimeout;
 
   if (RKADK_DEMUXER_Create(&mDemuxerCfg, &stDemuxerInput)) {
     RKADK_LOGE("RKADK_DEMUXER_Create failed");
@@ -331,7 +332,7 @@ static int DemuxerSetDataParam(RKADK_MW_PTR pPlayer, char *file,
   stDataParam.bVideoExist = stPlayCfg.bEnableVideo;
   stDataParam.bAudioExist = stPlayCfg.bEnableAudio;
   if (strstr(file, "rtsp://"))
-    stDataParam.bIsRtsp = RKADK_TRUE;
+    stDataParam.bIsNetRTStream = RKADK_TRUE;
 
   if (stDataParam.bVideoExist) {
     if (stDemuxerParam.pVideoCodec != NULL) {
@@ -408,6 +409,7 @@ int main(int argc, char *argv[]) {
   RKADK_PLAYER_STATE_E enState = RKADK_PLAYER_STATE_BUTT;
   RKADK_U32 u32Waterline = 0;
   RKADK_U32 u32DecodeMode = 0;
+  RKADK_U32 u32SeekTime = 3000;
 
   memset(&stPlayCfg, 0, sizeof(RKADK_PLAYER_CFG_S));
   param_init(&stPlayCfg.stFrmInfo);
@@ -448,7 +450,7 @@ int main(int argc, char *argv[]) {
       stPlayCfg.stFrmInfo.bFlip = true;
       break;
     case 'T':
-      stPlayCfg.stRtspCfg.u32IoTimeout = atoi(optarg) * 1000;
+      stPlayCfg.stNetStreamCfg.u32IoTimeout = atoi(optarg) * 1000;
       break;
     case 'l':
       stPlayCfg.stFrmInfo.u32VoLay = atoi(optarg);
@@ -528,7 +530,7 @@ int main(int argc, char *argv[]) {
   RKADK_LOGP("u32Waterline: %d, u32FrameBufCnt: %d, u32StreamBufCnt: %d",
               u32Waterline, stPlayCfg.stVdecCfg.u32FrameBufCnt, stPlayCfg.stVdecCfg.u32StreamBufCnt);
   RKADK_LOGP("transport: %d, u32IoTimeout: %d(us), pSoundCard: %s",
-              transport, stPlayCfg.stRtspCfg.u32IoTimeout, stPlayCfg.stAudioCfg.pSoundCard);
+              transport, stPlayCfg.stNetStreamCfg.u32IoTimeout, stPlayCfg.stAudioCfg.pSoundCard);
 
   if (u32SpliceMode == 1)
     stPlayCfg.stFrmInfo.enVoSpliceMode = SPLICE_MODE_GPU;
@@ -571,9 +573,9 @@ int main(int argc, char *argv[]) {
 
   //for rtsp
   if (transport == 1)
-    stPlayCfg.stRtspCfg.transport = "tcp";
+    stPlayCfg.stNetStreamCfg.transport = "tcp";
   else
-    stPlayCfg.stRtspCfg.transport = "udp";
+    stPlayCfg.stNetStreamCfg.transport = "udp";
 
   stPlayCfg.stSnapshotCfg.u32VencChn = 15;
   stPlayCfg.stSnapshotCfg.pfnDataCallback = SnapshotDataRecv;
@@ -634,7 +636,6 @@ int main(int argc, char *argv[]) {
   loop_count--;
 
   pthread_create(&getPosition, 0, GetPosition, pPlayer);
-  // RKADK_PLAYER_Seek(pPlayer, 1000); //seek 1s
 
   char cmd[64];
   printf("\n#Usage: input 'quit' to exit programe!\n"
@@ -649,15 +650,31 @@ int main(int argc, char *argv[]) {
         continue;
       }
 
-      RKADK_LOGP("replay, loop_count: %d", loop_count);
+      RKADK_LOGP("seek + replay test, loop_count: %d", loop_count);
       if (loop_count == 0) {
         RKADK_LOGP("loop play end!");
         is_quit = true;
         goto __EXIT;
       }
 
-      RKADK_PLAYER_Stop(pPlayer);
-      RKADK_PLAYER_GetDuration(pPlayer, &duration);
+      ret = RKADK_PLAYER_Stop(pPlayer);
+      if (ret) {
+        RKADK_LOGE("Stop failed");
+      }
+
+      ret = RKADK_PLAYER_Destroy(pPlayer);
+      if (ret) {
+        RKADK_LOGE("Destroy failed");
+        goto __EXIT;
+      }
+
+      pPlayer = NULL;
+      ret = RKADK_PLAYER_Create(&pPlayer, &stPlayCfg);
+      if (ret) {
+        RKADK_LOGE("Create failed");
+        goto __EXIT;
+      }
+
       ret = RKADK_PLAYER_SetDataSource(pPlayer, file);
       if (ret) {
         RKADK_LOGE("SetDataSource failed, ret = %d", ret);
@@ -669,12 +686,26 @@ int main(int argc, char *argv[]) {
         RKADK_LOGE("Prepare failed, ret = %d", ret);
         break;
       }
+      RKADK_PLAYER_GetDuration(pPlayer, &duration);
 
       ret = RKADK_PLAYER_Play(pPlayer);
       if (ret) {
         RKADK_LOGE("Play failed, ret = %d", ret);
         break;
       }
+
+      if ((loop_count % 3) == 0) {
+        u32SeekTime = 9200;
+      } else if ((loop_count % 2) == 0) {
+        u32SeekTime = 15800;
+        usleep(5 * 1000);
+      } else {
+        u32SeekTime = 3000;
+      }
+
+      RKADK_PLAYER_Seek(pPlayer, u32SeekTime);
+      if ((loop_count % 2) == 0)
+        sleep(3);
 
       loop_count--;
     } else {
@@ -855,7 +886,7 @@ static void playerMain(void *arg) {
       stPlayCfg.stFrmInfo.bFlip = true;
       break;
     case 'T':
-      stPlayCfg.stRtspCfg.u32IoTimeout = atoi(optarg) * 1000;
+      stPlayCfg.stNetStreamCfg.u32IoTimeout = atoi(optarg) * 1000;
       break;
     case 'l':
       stPlayCfg.stFrmInfo.u32VoLay = atoi(optarg);
@@ -929,7 +960,7 @@ static void playerMain(void *arg) {
   RKADK_LOGI("u32Waterline: %d, u32FrameBufCnt: %d, u32StreamBufCnt: %d",
               u32Waterline, stPlayCfg.stVdecCfg.u32FrameBufCnt, stPlayCfg.stVdecCfg.u32StreamBufCnt);
   RKADK_LOGI("transport: %d, u32IoTimeout: %d(us), pSoundCard: %s",
-              transport, stPlayCfg.stRtspCfg.u32IoTimeout, stPlayCfg.stAudioCfg.pSoundCard);
+              transport, stPlayCfg.stNetStreamCfg.u32IoTimeout, stPlayCfg.stAudioCfg.pSoundCard);
   RKADK_LOGI("hact: %d, vact: %d, speakerVolume: %d",
               stPlayCfg.stFrmInfo.stSyncInfo.u16Hact, stPlayCfg.stFrmInfo.stSyncInfo.u16Vact, stPlayCfg.stAudioCfg.u32SpeakerVolume);
 
@@ -965,9 +996,9 @@ static void playerMain(void *arg) {
 
   //for rtsp
   if (transport == 1)
-    stPlayCfg.stRtspCfg.transport = "tcp";
+    stPlayCfg.stNetStreamCfg.transport = "tcp";
   else
-    stPlayCfg.stRtspCfg.transport = "udp";
+    stPlayCfg.stNetStreamCfg.transport = "udp";
 
   stPlayCfg.stSnapshotCfg.u32VencChn = 15;
   stPlayCfg.stSnapshotCfg.pfnDataCallback = SnapshotDataRecv;

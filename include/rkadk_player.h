@@ -246,7 +246,7 @@ typedef struct {
 typedef struct {
   const char *transport; //udp or tcp, default: udp
   RKADK_U32 u32IoTimeout; //timeout (in microseconds) of socket I/O operations
-} RKADK_PLAYER_RTSP_CFG_S;
+} RKADK_PLAYER_NETWORK_STREAM_CFG_S;
 
 typedef struct {
   RKADK_U32 u32FrameBufCnt; //frame buffer cnt(output), default: 3
@@ -288,7 +288,7 @@ typedef struct {
 
 typedef struct {
   const RKADK_CHAR *pFilePath;
-  RKADK_BOOL bIsRtsp;
+  RKADK_BOOL bIsNetRTStream;
   RKADK_BOOL bVideoExist;
   RKADK_BOOL bAudioExist;
 
@@ -312,7 +312,7 @@ typedef struct {
   RKADK_BOOL bEnableAudio;
   RKADK_BOOL bEnableThirdDemuxer;
   RKADK_PLAYER_FRAME_INFO_S stFrmInfo;
-  RKADK_PLAYER_RTSP_CFG_S stRtspCfg;
+  RKADK_PLAYER_NETWORK_STREAM_CFG_S stNetStreamCfg;
   RKADK_PLAYER_VDEC_CFG_S stVdecCfg;
   RKADK_PLAYER_AUDIO_CFG_S stAudioCfg;
   RKADK_PLAYER_SNAPSHOT_CFG_S stSnapshotCfg;
@@ -432,7 +432,7 @@ RKADK_S32 RKADK_PLAYER_SendVideoPacket(RKADK_MW_PTR pPlayer,
 /**
  * @brief set vdec cache frames waterline
  * @param[in] pPlayer : RKADK_MW_PTR: handle of the player
- * @param[in] u32VdecWaterline : Rvdec cache frames waterline, must be less than vdec (u32FrameBufCnt + u32StreamBufCnt)
+ * @param[in] u32VdecWaterline : vdec cache frames waterline, must be less than vdec (u32FrameBufCnt + u32StreamBufCnt)
  * @retval  0 success, others failed
  */
 RKADK_S32 RKADK_PLAYER_SetVdecWaterline(RKADK_MW_PTR pPlayer, RKADK_U32 u32VdecWaterline);

@@ -198,7 +198,7 @@ typedef struct {
   RKADK_CHAR pFilePath[RKADK_PATH_LEN];
   RKADK_PLAYER_STATE_E enStatus;
   pthread_mutex_t mutex;
-  RKADK_BOOL bIsRtsp;
+  RKADK_BOOL bIsNetRTStream;    //network real time stream
   RKADK_BOOL bEnableBlackBackground;
   RKADK_BOOL bStopSendStream;
 
@@ -1251,7 +1251,7 @@ static void SendVideoData(RKADK_VOID *ptr) {
           if ((RKADK_S64)sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp > (RKADK_S64)costtime) {
             voSendTime = sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp - costtime;
 
-            if (!pstPlayer->bIsRtsp) {
+            if (!pstPlayer->bIsNetRTStream) {
 #ifndef OS_RTT
               usleep(voSendTime);
 #else
@@ -1278,7 +1278,7 @@ static void SendVideoData(RKADK_VOID *ptr) {
         rkadk_gettime(&t_begin);
 #endif
 
-        if (!pstPlayer->bIsRtsp) {
+        if (!pstPlayer->bIsNetRTStream) {
 #ifndef OS_RTT
           usleep(voSendTime);
 #else
@@ -1679,7 +1679,7 @@ __GETVDEC:
                       RKADK_LOGI("chn %d reach eos frame", pstPlayer->stVdecCtx.chnIndex);
                       flagVideoEnd = 1;
                     } else {
-                      if (pstPlayer->bIsRtsp) {
+                      if (pstPlayer->bIsNetRTStream) {
                         if ((pstPlayer->videoStreamCount - pstPlayer->frameCount) >= (pstPlayer->stVdecCtx.streamBufferCnt + pstPlayer->stVdecCtx.frameBufferCnt - 1)) {
                           RK_MPI_VDEC_ReleaseFrame(pstPlayer->stVdecCtx.chnIndex, &sFrame);
                           goto __GETVDEC;
@@ -1794,7 +1794,7 @@ __GETVDEC:
                 if ((RKADK_S64)sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp > (RKADK_S64)costtime) {
                   voSendTime = sFrame.stVFrame.u64PTS - pstPlayer->videoTimeStamp - costtime;
 
-                  if (!pstPlayer->bIsRtsp)
+                  if (!pstPlayer->bIsNetRTStream)
                     usleep(voSendTime);
                 }
                 voSendTime = frameTime;
@@ -1812,7 +1812,7 @@ __GETVDEC:
               }
 
               clock_gettime(CLOCK_MONOTONIC, &t_begin);
-              if (!pstPlayer->bIsRtsp)
+              if (!pstPlayer->bIsNetRTStream)
                 usleep(voSendTime);
             }
 
@@ -2021,7 +2021,7 @@ static RKADK_VOID DoPullDemuxerVideoPacket(RKADK_VOID* pHandle) {
     stStream.bBypassMbBlk = RK_TRUE;
 
 __RETRY:
-    if (pstPlayer->bIsRtsp) {
+    if (pstPlayer->bIsNetRTStream) {
       if (!pstPlayer->bVideoSendStreamFail || pstDemuxerPacket->s8SpecialFlag)
         ret = RK_MPI_VDEC_SendStream(pstPlayer->stVdecCtx.chnIndex, &stStream, 0);
       else
@@ -2034,7 +2034,6 @@ __RETRY:
         pstPlayer->videoStreamCount++;
       }
       RK_MPI_MB_ReleaseMB(stStream.pMbBlk);
-
     } else {
       ret = RK_MPI_VDEC_SendStream(pstPlayer->stVdecCtx.chnIndex, &stStream, -1);
       if (ret) {
@@ -2052,6 +2051,7 @@ __RETRY:
 #endif
         goto  __RETRY;
       }
+
       RK_MPI_MB_ReleaseMB(stStream.pMbBlk);
     }
   } else {
@@ -2132,7 +2132,7 @@ static RKADK_VOID DoPullDemuxerAudioPacket(RKADK_VOID* pHandle) {
     RK_MPI_SYS_CreateMB(&(stAudioStream.pMbBlk), &stExtConfig);
 
 __RETRY:
-    if (pstPlayer->bIsRtsp) {
+    if (pstPlayer->bIsNetRTStream) {
       ret = RK_MPI_ADEC_SendStream(pstPlayer->stAdecCtx.chnIndex, &stAudioStream, RK_FALSE);
       if (ret != RK_SUCCESS)
         RKADK_LOGE("RK_MPI_ADEC_SendStream failed[%x]", ret);
@@ -2514,8 +2514,8 @@ RKADK_S32 RKADK_PLAYER_Create(RKADK_MW_PTR *pPlayer,
     stDemuxerInput.readModeFlag = DEMUXER_TYPE_PASSIVE;
     stDemuxerInput.videoEnableFlag = pstPlayer->bEnableVideo;
     stDemuxerInput.audioEnableFlag = pstPlayer->bEnableAudio;
-    stDemuxerInput.transport = pstPlayCfg->stRtspCfg.transport;
-    stDemuxerInput.u32IoTimeout = pstPlayCfg->stRtspCfg.u32IoTimeout;
+    stDemuxerInput.transport = pstPlayCfg->stNetStreamCfg.transport;
+    stDemuxerInput.u32IoTimeout = pstPlayCfg->stNetStreamCfg.u32IoTimeout;
     if (RKADK_DEMUXER_Create(&pstPlayer->pDemuxerCfg, &stDemuxerInput)) {
       RKADK_LOGE("RKADK_DEMUXER_Create failed");
       free(pstPlayer);
@@ -2645,7 +2645,7 @@ RKADK_S32 RKADK_PLAYER_SetDataParam(RKADK_MW_PTR pPlayer,
   pstPlayer = (RKADK_PLAYER_HANDLE_S *)pPlayer;
   pstPlayer->videoTimeStamp = -1;
   pstPlayer->bStopSendStream = false;
-  pstPlayer->bIsRtsp = pstDataParam->bIsRtsp;
+  pstPlayer->bIsNetRTStream = pstDataParam->bIsNetRTStream;
 
   if (pstDataParam->pFilePath) {
     memset(pstPlayer->pFilePath, 0, RKADK_PATH_LEN);
@@ -2745,11 +2745,11 @@ RKADK_S32 RKADK_PLAYER_SetDataSource(RKADK_MW_PTR pPlayer,
   RKADK_LOGI("SetDataSource[%s] start...", pszfilePath);
 
   if (strstr(pszfilePath, "rtsp://"))
-    pstPlayer->bIsRtsp = RKADK_TRUE;
+    pstPlayer->bIsNetRTStream = RKADK_TRUE;
   else
     suffix = strrchr(pszfilePath, '.');
 
-  if (!suffix && !pstPlayer->bIsRtsp) {
+  if (!suffix && !pstPlayer->bIsNetRTStream) {
     RKADK_LOGD("Non-file format or rtsp: %s", pszfilePath);
     goto __FAILED;
   }
@@ -2764,7 +2764,7 @@ RKADK_S32 RKADK_PLAYER_SetDataSource(RKADK_MW_PTR pPlayer,
     memcpy(pstPlayer->pFilePath, pszfilePath, strlen(pszfilePath));
   }
 
-  if((suffix && !strcmp(suffix, ".mp4")) || pstPlayer->bIsRtsp) {
+  if((suffix && !strcmp(suffix, ".mp4")) || pstPlayer->bIsNetRTStream) {
     pstPlayer->stDemuxerParam.pstReadPacketCallback.pfnReadVideoPacketCallback = DoPullDemuxerVideoPacket;
     pstPlayer->stDemuxerParam.pstReadPacketCallback.pfnReadAudioPacketCallback = DoPullDemuxerAudioPacket;
 
@@ -3328,8 +3328,8 @@ RKADK_S32 RKADK_PLAYER_Seek(RKADK_MW_PTR pPlayer, RKADK_S64 s64TimeInMs) {
     return RKADK_FAILURE;
   }
 
-  if (strstr(pstPlayer->pFilePath, "rtsp://")) {
-    RKADK_LOGI("Nonsupport rtsp seek");
+  if (strstr(pstPlayer->pFilePath, "rtsp://") || strstr(pstPlayer->pFilePath, "http://")) {
+    RKADK_LOGE("Nonsupport network stream seek");
     return RKADK_FAILURE;
   }
 
@@ -3437,8 +3437,8 @@ RKADK_S32 RKADK_PLAYER_GetDuration(RKADK_MW_PTR pPlayer, RKADK_U32 *pDuration) {
     return RKADK_FAILURE;
   }
 
-  if (strstr(pstPlayer->pFilePath, "rtsp://")) {
-    RKADK_LOGI("Nonsupport get rtsp duration");
+  if (strstr(pstPlayer->pFilePath, "rtsp://") || strstr(pstPlayer->pFilePath, "http://")) {
+    RKADK_LOGE("Nonsupport get network stream duration");
     return RKADK_FAILURE;
   }
 

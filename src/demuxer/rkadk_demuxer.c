@@ -26,7 +26,7 @@ RKADK_S32 RKADK_DEMUXER_Create(RKADK_MW_PTR *demuxerCfg, RKADK_DEMUXER_INPUT_S *
   stDemuxerInput.s8VideoEnableFlag = demuxerInput->videoEnableFlag;
   stDemuxerInput.s8AudioEnableFlag = demuxerInput->audioEnableFlag;
   stDemuxerInput.transport = demuxerInput->transport;
-  stDemuxerInput.rtsp_io_timeout = demuxerInput->u32IoTimeout;
+  stDemuxerInput.network_io_timeout = demuxerInput->u32IoTimeout;
 
   RKADK_S32 ret = rkdemuxer_init(demuxerCfg, &stDemuxerInput);
   if (ret) {
