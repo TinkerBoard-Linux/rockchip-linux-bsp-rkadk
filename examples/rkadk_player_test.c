@@ -41,6 +41,7 @@
 extern int optind;
 extern char *optarg;
 static bool is_quit = false;
+static bool is_destroy = false;
 static RKADK_CHAR optstr[] = "i:x:y:W:H:r:a:s:P:I:t:F:T:l:c:d:O:S:V:R:w:C:A:M:N:mfvbDh";
 
 static RKADK_VOID *mDemuxerCfg = NULL;
@@ -213,7 +214,7 @@ void param_init(RKADK_PLAYER_FRAME_INFO_S *pstFrmInfo) {
 
 RKADK_VOID *GetPosition(RKADK_VOID *arg) {
     RKADK_S64 position = 0;
-    while (!is_quit) {
+    while (!is_quit && !is_destroy) {
       position = RKADK_PLAYER_GetCurrentPosition(arg);
       printf("position = %lld\n", position);
 
@@ -672,6 +673,12 @@ int main(int argc, char *argv[]) {
         goto __EXIT;
       }
 
+      if (getPosition) {
+        is_destroy = true;
+        pthread_join(getPosition, RKADK_NULL);
+        getPosition = 0;
+      }
+
       pPlayer = NULL;
       ret = RKADK_PLAYER_Create(&pPlayer, &stPlayCfg);
       if (ret) {
@@ -698,6 +705,8 @@ int main(int argc, char *argv[]) {
         break;
       }
 
+      is_destroy = false;
+      pthread_create(&getPosition, 0, GetPosition, pPlayer);
       if ((loop_count % 3) == 0) {
         u32SeekTime = 9200;
       } else if ((loop_count % 2) == 0) {
