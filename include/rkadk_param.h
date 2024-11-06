@@ -193,6 +193,7 @@ typedef enum {
   RKADK_PARAM_TYPE_JPEG_SLICE,      /* enable/disable jpeg slice */
   RKADK_PARAM_TYPE_SLICE_HEIGHT,    /* set jpeg slice height */
   RKADK_PARAM_TYPE_INPUT_FMT,       /* set vi input format */
+  RKADK_PARAM_TYPE_INPUT_BUFCNT,    /* set vi input format */
   RKADK_PARAM_TYPE_ENABLE_AUDIO,    /* enable record audio */
 
   // COMM Dependent Param
@@ -236,6 +237,11 @@ typedef struct {
   RKADK_STREAM_TYPE_E enStreamType;
   const char *format;
 } RKADK_PARAM_INPUT_FMT_S;
+
+typedef struct {
+  RKADK_STREAM_TYPE_E enStreamType;
+  RKADK_U32 u32BufCnt;
+} RKADK_PARAM_INPUT_BUFCNT_S;
 
 typedef struct tagRKADK_PARAM_VERSION_S {
   char version[RKADK_BUFFER_LEN];

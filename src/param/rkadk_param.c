@@ -3765,6 +3765,70 @@ static RKADK_S32 RKADK_PARAM_SetInputFormat(RKADK_S32 s32CamId,
   return 0;
 }
 
+static RKADK_S32 RKADK_PARAM_SetInputBufCnt(RKADK_S32 s32CamId,
+                                        RKADK_PARAM_INPUT_BUFCNT_S *pstBufCnt) {
+  RKADK_PARAM_VI_CFG_S *pstViCfg = NULL;
+  RKADK_PRAAM_VI_ATTR_S *pstViAttr = NULL;
+
+  switch (pstBufCnt->enStreamType) {
+  case RKADK_STREAM_TYPE_VIDEO_MAIN: {
+    RKADK_PARAM_REC_CFG_S *pstRecCfg = RKADK_PARAM_GetRecCfg(s32CamId);
+    pstViAttr = &pstRecCfg->vi_attr[0];
+    break;
+  }
+
+  case RKADK_STREAM_TYPE_VIDEO_SUB: {
+    RKADK_PARAM_REC_CFG_S *pstRecCfg = RKADK_PARAM_GetRecCfg(s32CamId);
+    pstViAttr = &pstRecCfg->vi_attr[1];
+    break;
+  }
+
+  case RKADK_STREAM_TYPE_SNAP: {
+    RKADK_PARAM_PHOTO_CFG_S *pstPhotoCfg = RKADK_PARAM_GetPhotoCfg(s32CamId);
+    pstViAttr = &pstPhotoCfg->vi_attr;
+    break;
+  }
+
+  case RKADK_STREAM_TYPE_PREVIEW:
+  case RKADK_STREAM_TYPE_LIVE: {
+    RKADK_PARAM_STREAM_CFG_S *pstStreamCfg = RKADK_PARAM_GetStreamCfg(s32CamId, pstBufCnt->enStreamType);
+    pstViAttr = &pstStreamCfg->vi_attr;
+    break;
+  }
+
+  case RKADK_STREAM_TYPE_DISP: {
+    RKADK_PARAM_DISP_CFG_S *pstDispCfg = RKADK_PARAM_GetDispCfg(s32CamId);
+    pstViAttr = &pstDispCfg->vi_attr;
+    break;
+  }
+
+  case RKADK_STREAM_TYPE_THUMB: {
+    RKADK_PARAM_THUMB_CFG_S *pstThumbCfg = RKADK_PARAM_GetThumbCfg(s32CamId);
+    pstViAttr = &pstThumbCfg->vi_attr;
+    break;
+  }
+
+  default: {
+    RKADK_LOGE("Unsupport enStreamType: %d", pstBufCnt->enStreamType);
+    return -1;
+  }
+  }
+
+  RKADK_LOGD("index[%d] old bufcnt[%d]", pstViAttr->index, pstViAttr->stChnAttr.stIspOpt.u32BufCount);
+  pstViAttr->stChnAttr.stIspOpt.u32BufCount = pstBufCnt->u32BufCnt;
+  RKADK_LOGD("index[%d] new bufcnt[%d]", pstViAttr->index, pstViAttr->stChnAttr.stIspOpt.u32BufCount);
+
+  pstViCfg = &g_stPARAMCtx.stCfg.stMediaCfg[s32CamId].stViCfg[pstViAttr->index];
+  if (pstBufCnt->u32BufCnt == pstViCfg->buf_cnt) {
+    RKADK_LOGD("vi[%d] bufcnt[%d] no change", pstViAttr->index, pstViCfg->buf_cnt);
+  } else {
+    pstViCfg->buf_cnt = pstBufCnt->u32BufCnt;
+    RKADK_PARAM_SaveViCfg(g_stPARAMCtx.sensorPath[s32CamId], pstViAttr->index, s32CamId);
+  }
+
+  return 0;
+}
+
 RKADK_S32 RKADK_PARAM_GetCamParam(RKADK_S32 s32CamId,
                                   RKADK_PARAM_TYPE_E enParamType,
                                   RKADK_VOID *pvParam) {
@@ -4043,7 +4107,10 @@ RKADK_S32 RKADK_PARAM_SetCamParam(RKADK_S32 s32CamId,
     ret = RKADK_PARAM_SetInputFormat(s32CamId, (RKADK_PARAM_INPUT_FMT_S *)pvParam);
     RKADK_MUTEX_UNLOCK(g_stPARAMCtx.mutexLock);
     return ret;
-    break;
+  case RKADK_PARAM_TYPE_INPUT_BUFCNT:
+    ret = RKADK_PARAM_SetInputBufCnt(s32CamId, (RKADK_PARAM_INPUT_BUFCNT_S *)pvParam);
+    RKADK_MUTEX_UNLOCK(g_stPARAMCtx.mutexLock);
+    return ret;
   default:
     RKADK_LOGE("Unsupport enParamType(%d)", enParamType);
     RKADK_MUTEX_UNLOCK(g_stPARAMCtx.mutexLock);
