@@ -114,12 +114,9 @@ if GetDepend('RT_RKADK_ENABLE_PLAYER'):
     src += ['player/rkadk_player.c']
 
 CPPPATH = [cwd]
-CPPPATH += ["../../../libc/posix/pthreads"]
-CPPPATH += ["../../../libc/posix/io/man/sys"]
-CPPPATH += ["../../../libc/posix/io/poll"]
 CPPPATH += ["../include"]
-CPPPATH += ["../../../common_algorithm/common_algorithm/misc/include"]
-CPPPATH += ["../../../rockit/rockit/sdk/include"]
+CPPPATH += ["../../common_algorithm/misc/include"]
+CPPPATH += ["../../rockit/sdk/include"]
 CPPPATH += ["./common"]
 CPPPATH += ["./third-party"]
 CPPPATH += ["./audio/decoder"]
@@ -129,15 +126,15 @@ libs = ['rkdemuxer']
 libs += ['rkaudio']
 libs += ['rockit']
 
-libpath = [cwd + '/../../../common_algorithm/common_algorithm/misc/lib/arm-none-eabi']
+libpath = [cwd + '/../../common_algorithm/misc/lib/arm-none-eabi']
 
 if SOC == 'RK3308':
-    CPPPATH += ["../../../rockit/rockit/sdk/lib/arm/rk3308"]
-    libpath1 = [cwd + '/../../../rockit/rockit/mpi/sdk/lib/arm/rk3308/rtt']
+    CPPPATH += ["../../rockit/sdk/lib/arm/rk3308"]
+    libpath1 = [cwd + '/../../rockit/mpi/sdk/lib/arm/rk3308/rtt']
 
 if SOC == 'RK3506':
-    CPPPATH += ["../../../rockit/rockit/sdk/lib/arm/rk3506"]
-    libpath1 = [cwd + '/../../../rockit/rockit/mpi/sdk/lib/arm/rk3506/rtt']
+    CPPPATH += ["../../rockit/sdk/lib/arm/rk3506"]
+    libpath1 = [cwd + '/../../rockit/mpi/sdk/lib/arm/rk3506/rtt']
 
 
 group = DefineGroup('rkadk', src, depend = ['RT_USING_RKADK'], CPPPATH = CPPPATH, CPPDEFINES=CPPDEFINES, LIBS = libs, LIBPATH = libpath + libpath1)

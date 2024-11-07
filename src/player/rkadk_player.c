@@ -32,7 +32,7 @@
 #ifndef OS_RTT
 #include "rkdemuxer.h"
 #else
-#include "../../../common_algorithm/common_algorithm/misc/include/rkdemuxer.h"
+#include "../../common_algorithm/misc/include/rkdemuxer.h"
 #endif
 #include <stdbool.h>
 #include <pthread.h>

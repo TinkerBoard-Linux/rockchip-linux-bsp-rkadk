@@ -26,7 +26,7 @@ extern "C" {
 #ifndef OS_RTT
 #include "file_common.h"
 #else
-#include "../../../common_algorithm/common_algorithm/misc/include/file_common.h"
+#include "../../common_algorithm/misc/include/file_common.h"
 #endif
 
 

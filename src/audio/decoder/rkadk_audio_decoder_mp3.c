@@ -25,7 +25,7 @@ extern "C" {
 #ifndef OS_RTT
 #include "mp3dec.h"
 #else
-#include "../../../common_algorithm/common_algorithm/misc/include/mp3dec.h"
+#include "../../common_algorithm/misc/include/mp3dec.h"
 #endif
 #ifdef __cplusplus
 }
