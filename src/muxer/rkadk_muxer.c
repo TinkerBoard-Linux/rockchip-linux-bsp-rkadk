@@ -437,6 +437,31 @@ static void RKADK_MUXER_AovDropFrame(RKADK_MUXER_HANDLE_S *pstMuxer) {
   }
 }
 
+static bool RKADK_MUXER_IsEnableAiisp() {
+  RKADK_PARAM_COMM_CFG_S *pstCommCfg = NULL;
+  RKADK_PARAM_REC_CFG_S *pstRecCfg = NULL;
+
+  pstCommCfg = RKADK_PARAM_GetCommCfg();
+  if (!pstCommCfg) {
+     RKADK_LOGE("RKADK_PARAM_GetCommCfg failed");
+     return false;
+  }
+
+  for (int i = 0; i < pstCommCfg->sensor_count; i++) {
+    pstRecCfg = RKADK_PARAM_GetRecCfg(i);
+    if (!pstRecCfg) {
+      continue;
+    }
+
+    for (int j = 0; j < (int)pstRecCfg->file_num; j++) {
+      if (pstRecCfg->attribute[j].post_aiisp)
+        return true;
+    }
+  }
+
+  return false;
+}
+
 static int RKADK_MUXER_AovSwichMode(RKADK_MUXER_HANDLE_S *pstMuxer) {
   if (pstMuxer->enFrameMode == MULTI_FRAME_MODE && pstMuxer->enRecType == RKADK_REC_TYPE_AOV_LAPSE) {
     if (!pstMuxer->stAovAttr.pfnSingleFrame) {
@@ -445,7 +470,8 @@ static int RKADK_MUXER_AovSwichMode(RKADK_MUXER_HANDLE_S *pstMuxer) {
     }
 
     pstMuxer->stAovAttr.pfnSingleFrame(pstMuxer->u32CamId);
-    RKADK_AOV_DisableNonBootCPUs();
+    if (!RKADK_MUXER_IsEnableAiisp())
+      RKADK_AOV_DisableNonBootCPUs();
     RKADK_MUXER_AovDropFrame(pstMuxer);
     pstMuxer->enFrameMode = SINGLE_FRAME_MODE;
     RKADK_MUXER_EnterSleep((RKADK_MW_PTR)pstMuxer, -1);
