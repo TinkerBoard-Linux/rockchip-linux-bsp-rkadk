@@ -879,7 +879,7 @@ static int RKADK_RECORD_CreateAudioChn(RKADK_U32 u32CamId) {
 
   stAiAttr.enSoundmode = soundMode;
   stAiAttr.u32FrmNum = 2;
-  stAiAttr.u32PtNumPerFrm = bytes * pstAudioParam->samples_per_frame;
+  stAiAttr.u32PtNumPerFrm = bytes * pstAudioParam->samples_per_frame * pstAudioParam->channels;
   stAiAttr.u32EXFlag = 0;
   stAiAttr.u32ChnCnt = pstAudioParam->channels;
   ret = RKADK_MPI_AI_Init(0, RECORD_AI_CHN, &stAiAttr, pstAudioParam->vqe_mode,

@@ -355,7 +355,7 @@ static RKADK_S32 RKADK_RTSP_SetAiAttr(AIO_ATTR_S *pstAiAttr,
 
   pstAiAttr->enSoundmode = soundMode;
   pstAiAttr->u32FrmNum = 2;
-  pstAiAttr->u32PtNumPerFrm = bytes * pstAudioParam->samples_per_frame;
+  pstAiAttr->u32PtNumPerFrm = bytes * pstAudioParam->samples_per_frame * pstAudioParam->channels;
   pstAiAttr->u32EXFlag = 0;
   pstAiAttr->u32ChnCnt = pstAudioParam->channels;
   return 0;
