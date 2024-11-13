@@ -1773,6 +1773,10 @@ RKADK_S32 RKADK_MUXER_Disable(RKADK_MW_PTR pHandle) {
       continue;
     }
 
+#ifdef FILE_CACHE
+    file_cache_process_exit(pstMuxerHandle->cFileName);
+#endif
+
     // Set flag off
     pstMuxerHandle->bEnableStream = false;
 
