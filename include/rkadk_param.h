@@ -356,6 +356,7 @@ typedef struct tagRKADK_PARAM_DISP_CFG_S {
   RKADK_U32 vo_device;
   RKADK_U32 vo_layer;
   RKADK_U32 vo_chn;
+  RKADK_U32 layer_buflen;
   RKADK_PRAAM_VI_ATTR_S vi_attr;
 } RKADK_PARAM_DISP_CFG_S;
 

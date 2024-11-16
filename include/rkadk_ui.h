@@ -40,6 +40,7 @@ typedef struct {
   RKADK_VO_FORMAT_E enUiVoFormat;
   RKADK_VO_INTF_TYPE_E enUiVoIntfTye;
   RKADK_VO_SPLICE_MODE_E enVoSpliceMode;
+  RKADK_U32 u32DispBufLen;
 } RKADK_UI_ATTR_S;
 
 typedef struct {

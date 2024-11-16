@@ -1379,6 +1379,8 @@ static void RKADK_PARAM_Dump() {
            pstCfg->stMediaCfg[i].stDispCfg.vo_layer);
     printf("\t\tsensor[%d] stDispCfg vo_chn: %d\n", i,
            pstCfg->stMediaCfg[i].stDispCfg.vo_chn);
+    printf("\t\tsensor[%d] stDispCfg layer_buflen: %d\n", i,
+           pstCfg->stMediaCfg[i].stDispCfg.layer_buflen);
 
     printf("\tThumb Config\n");
     printf("\t\tsensor[%d] stThumbCfg thumb_width: %d\n", i,

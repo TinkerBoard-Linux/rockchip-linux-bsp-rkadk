@@ -238,7 +238,7 @@ static void RKADK_MEDIA_CheckVoLayerParam(VO_VIDEO_LAYER_ATTR_S *pstLayerAttr, V
 
 static RKADK_U32 RKADK_MPI_VO_CreateLayDev(RKADK_S32 s32VoLay, RKADK_S32 s32VoDev,
                                           VO_PUB_ATTR_S *pstVoPubAttr, VO_VIDEO_LAYER_ATTR_S *pstLayerAttr,
-                                          RKADK_VO_SPLICE_MODE_E enVoSpliceMode) {
+                                          RKADK_VO_SPLICE_MODE_E enVoSpliceMode, RKADK_U32 u32DispBufLen) {
   int ret = 0;
   VO_SPLICE_MODE_E enSpliceMode = VO_SPLICE_MODE_RGA;
 
@@ -297,7 +297,7 @@ static RKADK_U32 RKADK_MPI_VO_CreateLayDev(RKADK_S32 s32VoLay, RKADK_S32 s32VoDe
     if (enVoSpliceMode != SPLICE_MODE_BYPASS)
       RK_MPI_VO_SetLayerSpliceMode(s32VoLay, enSpliceMode);
 
-    RK_MPI_VO_SetLayerDispBufLen(s32VoLay, 3);
+    RK_MPI_VO_SetLayerDispBufLen(s32VoLay, u32DispBufLen);
 
     ret = RK_MPI_VO_EnableLayer(s32VoLay);
     if (ret) {
@@ -1296,7 +1296,8 @@ static void RKADK_MEDIA_CheckVoParam(VO_VIDEO_LAYER_ATTR_S *pstLayerAttr, VO_CHN
 
 RKADK_S32 RKADK_MPI_VO_Init(RKADK_S32 s32VoLay, RKADK_S32 s32VoDev, RKADK_S32 s32VoChn,
                         VO_PUB_ATTR_S *pstVoPubAttr, VO_VIDEO_LAYER_ATTR_S *pstLayerAttr,
-                        VO_CHN_ATTR_S *pstChnAttr, RKADK_VO_SPLICE_MODE_E enVoSpliceMode) {
+                        VO_CHN_ATTR_S *pstChnAttr, RKADK_VO_SPLICE_MODE_E enVoSpliceMode,
+                        RKADK_U32 u32DispBufLen) {
   int ret = -1;
   RKADK_S32 i;
 
@@ -1319,7 +1320,7 @@ RKADK_S32 RKADK_MPI_VO_Init(RKADK_S32 s32VoLay, RKADK_S32 s32VoDev, RKADK_S32 s3
 
   if (0 == g_stMediaCtx.stVoInfo[i].s32InitCnt) {
     ret = RKADK_MPI_VO_CreateLayDev(s32VoLay, s32VoDev, pstVoPubAttr,
-                                      pstLayerAttr, enVoSpliceMode);
+                                      pstLayerAttr, enVoSpliceMode, u32DispBufLen);
     if (ret) {
       RKADK_LOGE("RKADK_MPI_Vo_CreateLayDev[%d, %d] failed[%x]", s32VoLay, s32VoDev, ret);
       goto exit;

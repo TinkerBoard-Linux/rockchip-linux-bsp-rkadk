@@ -108,8 +108,11 @@ RKADK_S32 RKADK_UI_Create(RKADK_UI_ATTR_S *pstUiAttr, RKADK_MW_PTR *ppUi) {
   pstHandle->u32VoDev = pstUiAttr->u32VoDev;
   pstHandle->u32VoChn = pstUiAttr->u32VoChn;
 
+  // DispBufLen set to 3 to resolve display frame rate insufficiency
+  if (pstUiAttr->u32DispBufLen <= 0)
+    pstUiAttr->u32DispBufLen = 3;
   ret = RKADK_MPI_VO_Init(pstUiAttr->u32VoLay, pstUiAttr->u32VoDev, pstUiAttr->u32VoChn,
-                          &stVoPubAttr, &stLayerAttr, &stChnAttr, pstUiAttr->enVoSpliceMode);
+                          &stVoPubAttr, &stLayerAttr, &stChnAttr, pstUiAttr->enVoSpliceMode, pstUiAttr->u32DispBufLen);
   if (ret) {
     RKADK_LOGE("RKADK_MPI_Vo_Init failed, ret[%x]", ret);
     goto failed;

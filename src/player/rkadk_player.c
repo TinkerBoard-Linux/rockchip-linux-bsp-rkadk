@@ -131,6 +131,7 @@ typedef struct {
   MIRROR_E    enMirror;
   ROTATION_E  enRotation;
   RKADK_VO_SPLICE_MODE_E enVoSpliceMode;
+  RKADK_U32  u32DispBufLen;
 } RKADK_PLAYER_VO_CTX_S;
 
 typedef struct {
@@ -508,6 +509,7 @@ static RKADK_S32 SetVoCtx(RKADK_PLAYER_VO_CTX_S *pstVoCtx, RKADK_PLAYER_FRAME_IN
   pstVoCtx->dispFrmRt = pstFrameInfo->stSyncInfo.u16FrameRate;
   pstVoCtx->enIntfType = pstFrameInfo->u32EnIntfType;
   pstVoCtx->enVoSpliceMode = pstFrameInfo->enVoSpliceMode;
+  pstVoCtx->u32DispBufLen = pstFrameInfo->u32DispBufLen;
 
   switch (pstFrameInfo->u32VoFormat) {
     case VO_FORMAT_RGB888:
@@ -2417,9 +2419,12 @@ static RKADK_S32 CreateDeviceVo(RKADK_PLAYER_HANDLE_S *pstPlayer, RKADK_PLAYER_F
             stChnAttr.stRect.s32X, stChnAttr.stRect.s32Y = pstPlayer->stVoCtx.y,
             stChnAttr.stRect.u32Width, stChnAttr.stRect.u32Height);
 
+  // DispBufLen set to 3 to resolve display frame rate insufficiency
+  if (pstFrameInfo->u32DispBufLen <= 0)
+    pstFrameInfo->u32DispBufLen = 3;
   ret = RKADK_MPI_VO_Init(pstPlayer->stVoCtx.u32VoLay, pstPlayer->stVoCtx.u32VoDev,
                         pstPlayer->stVoCtx.u32VoChn, &stPubAttr, &stLayerAttr, &stChnAttr,
-                        pstFrameInfo->enVoSpliceMode);
+                        pstFrameInfo->enVoSpliceMode, pstFrameInfo->u32DispBufLen);
   if (ret) {
     RKADK_LOGE("RKADK_MPI_Vo_Init failed[%x]", ret);
     return ret;

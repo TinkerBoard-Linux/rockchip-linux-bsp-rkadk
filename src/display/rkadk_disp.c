@@ -70,8 +70,11 @@ static int RKADK_DISP_CreateVo(RKADK_U32 VoLayer, RKADK_U32 VoDev,
   stChnAttr.enMirror = MIRROR_NONE;
   stChnAttr.enRotation = (ROTATION_E)pstDispCfg->rotation;
 
+  // DispBufLen set to 3 to resolve display frame rate insufficiency
+  if (pstDispCfg->layer_buflen <= 0)
+    pstDispCfg->layer_buflen = 3;
   ret = RKADK_MPI_VO_Init(VoLayer, VoDev, pstDispCfg->vo_chn,
-                          &stVoPubAttr, &stLayerAttr, &stChnAttr, enVoSpliceMode);
+                          &stVoPubAttr, &stLayerAttr, &stChnAttr, enVoSpliceMode, pstDispCfg->layer_buflen);
   if (ret) {
     RKADK_LOGE("RKADK_MPI_Vo_Init failed, ret = %x", ret);
     return ret;
