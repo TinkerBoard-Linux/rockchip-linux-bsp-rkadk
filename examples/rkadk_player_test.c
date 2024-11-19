@@ -55,7 +55,7 @@ static void print_usage(const RKADK_CHAR *name) {
   printf("\t-y: display y coordinate, Default: 0\n");
   printf("\t-W: display width, Default: Physical screen width\n");
   printf("\t-H: display height, Default: Physical screen height\n");
-  printf("\t-r: rotation, option: 0, 90, 180, 270, Default: 0\n");
+  printf("\t-r: rotation, option: 0(0), 1(90), 2(180), 3(270), Default: 0\n");
   printf("\t-m: mirror enable, Default: disable\n");
   printf("\t-f: flip enable, Default: disable\n");
   printf("\t-a: set audio enable/disable, option: 0, 1; Default: enable\n");
